@@ -579,28 +579,7 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const normP=p=>({...p,qty:+p.qty||0,purchasePrice:+p.purchasePrice||0,sellingPrice:+p.sellingPrice||0,lowStockAlert:+p.lowStockAlert||0});
 function normB(b){if(typeof b.items==='string'){try{b.items=JSON.parse(b.items);}catch{b.items=[];}}return{...b,totalAmount:+b.totalAmount||0,payableAmount:+b.payableAmount||0,amountPaid:+b.amountPaid||0};}
 
-/* ── API ── */
-async function apiGet(action){
-  if(DEMO)return demoGet(action);
-  try{const r=await fetch(SCRIPT_URL+'?action='+action,{redirect:'follow'});const d=await r.json();if(d?.error)throw new Error(d.error);return d||[];}
-  catch(e){toast('DB error: '+e.message,'err');return[];}
-}
-async function apiPost(payload){
-  if(DEMO)return demoPost(payload);
-  try{const r=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify(payload),redirect:'follow'});const d=await r.json();if(d?.error)throw new Error(d.error);return d;}
-  catch(e){toast('DB error: '+e.message,'err');throw e;}
-}
-async function loadAll(){
-  try{
-    const [pr,cu,bi,ve,or,re,vp,cp]=await Promise.all([
-      apiGet('getProducts'),apiGet('getCustomers'),apiGet('getBills'),apiGet('getVendors'),
-      apiGet('getOrders'),apiGet('getReturns'),apiGet('getVendorPayments'),apiGet('getCustomerPayments')
-    ]);
-    DB.products=(pr||[]).map(normP);DB.customers=cu||[];DB.bills=(bi||[]).map(normB);
-    DB.vendors=ve||[];DB.orders=or||[];DB.returns=re||[];
-    DB.vendorPayments=vp||[];DB.customerPayments=cp||[];
-  }catch(e){toast('Load failed','err');}
-}
+
 
 /* ── DEMO MODE ── */
 function demoGet(a){const m={getProducts:DB.products,getCustomers:DB.customers,getBills:DB.bills,getVendors:DB.vendors,getOrders:DB.orders,getReturns:DB.returns,getVendorPayments:DB.vendorPayments,getCustomerPayments:DB.customerPayments};return Promise.resolve(m[a]||[]);}
