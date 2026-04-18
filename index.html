@@ -260,7 +260,7 @@ table.tbl{width:100%;border-collapse:collapse}
         <div><div class="logo-name">ShopOS</div><div class="logo-sub">Point of Sale System</div></div>
       </div>
       <div class="form-group"><label class="form-label">Username</label><input type="text" class="form-control" id="loginUser" placeholder="Enter username" autofocus/></div>
-      <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-control" id="loginPass" placeholder="Enter password"/></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-control" id="loginPass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
       <div id="loginErr" class="alert alert-danger" style="display:none;margin-bottom:12px">Invalid username or password.</div>
       <button class="btn btn-primary btn-block" onclick="doLogin()" style="padding:11px">Sign In</button>
       <div style="margin-top:14px;font-size:12px;color:var(--hint);text-align:center">Default: <strong>admin</strong> / <strong>admin123</strong></div>
@@ -314,6 +314,7 @@ table.tbl{width:100%;border-collapse:collapse}
 
 <script>
 'use strict';
+
 // ═══════════════════════════════════════════════════════
 // CONFIG — edit users here
 // ═══════════════════════════════════════════════════════
@@ -321,6 +322,16 @@ const USERS = [
   {username:'admin',   password:'admin123',   role:'admin',   name:'Admin User'},
   {username:'cashier', password:'cashier123', role:'cashier', name:'Cashier Staff'},
 ];
+
+// ═══════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════
+const g = id => document.getElementById(id);
+const val = id => (g(id) ? g(id).value.trim() : '');
+function fmt(n){ return '₨'+(+n||0).toLocaleString('en-PK',{maximumFractionDigits:0}); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function today(){ return new Date().toISOString().slice(0,10); }
+function esc(s){ const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML; }
 
 // ═══════════════════════════════════════════════════════
 // STATE
@@ -332,17 +343,47 @@ const DB = {products:[],customers:[],bills:[],vendors:[],orders:[],returns:[]};
 
 let App = {
   page:'dashboard', user:null,
-  // billing
   cart:[], billCustType:'walkin', billCust:null,
   payMethod:'cash', payStatus:'paid',
   selectedProduct:null,
-  // inventory
   invFilter:'all',
-  // returns
   retMode:'return', retProduct:null, repProduct:null,
-  // vendors
   selVendorId:null,
 };
+
+// ═══════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════
+function toast(msg, type='info', dur=3200){
+  const w=g('toastWrap');
+  const t=document.createElement('div');
+  t.className='toast'+(type==='success'?' success':type==='error'?' error':type==='warn'?' warn':'');
+  t.innerHTML=`<span style="flex:1">${msg}</span><button style="background:none;border:none;color:inherit;cursor:pointer;opacity:.7;font-size:15px;line-height:1" onclick="this.parentNode.remove()">✕</button>`;
+  w.appendChild(t);
+  setTimeout(()=>{t.style.transition='opacity .3s,transform .3s';t.style.opacity='0';t.style.transform='translateY(8px)';setTimeout(()=>t.remove(),320);},dur);
+}
+function showModal(html){
+  g('modalWrap').innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal-box">${html}</div></div>`;
+}
+function closeModal(){ g('modalWrap').innerHTML=''; }
+function statusBadge(s){
+  const m={paid:'bg-green',unpaid:'bg-red',partial:'bg-amber',open:'bg-amber'};
+  return `<span class="badge ${m[s]||'bg-gray'}">${s||'—'}</span>`;
+}
+function shopBadge(s){
+  return `<span class="badge ${s==='Mobile'?'bg-purple':'bg-blue'}">${esc(s||'—')}</span>`;
+}
+function emptyState(icon,text,iconSz){
+  return `<div class="empty"><div class="empty-icon" style="font-size:${iconSz||'32px'}">${icon}</div><div class="empty-text">${text}</div></div>`;
+}
+function refreshAlerts(){
+  const low=DB.products.filter(p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert).length;
+  const unpaid=DB.bills.filter(b=>b.paymentStatus!=='paid').length;
+  const pills=[];
+  if(low) pills.push(`<span class="topbar-pill bg-amber">⚠️ ${low} low stock</span>`);
+  if(unpaid) pills.push(`<span class="topbar-pill bg-red">🔴 ${unpaid} unpaid</span>`);
+  g('alertPills').innerHTML=pills.join('');
+}
 
 // ═══════════════════════════════════════════════════════
 // API LAYER
@@ -356,7 +397,6 @@ async function apiGet(action) {
     return data || [];
   } catch(e) { toast('DB Error: '+e.message,'error'); throw e; }
 }
-
 async function apiPost(payload) {
   if (DEMO) return demoPost(payload);
   try {
@@ -366,7 +406,6 @@ async function apiPost(payload) {
     return data;
   } catch(e) { toast('DB Error: '+e.message,'error'); throw e; }
 }
-
 async function loadAll() {
   try {
     const [pr,cu,bi,ve,or,re] = await Promise.all([
@@ -381,7 +420,6 @@ async function loadAll() {
     DB.returns   = re||[];
   } catch(e) { toast('Failed to load: '+e.message,'error'); }
 }
-
 function normProd(p){ return {...p, qty:+p.qty||0, purchasePrice:+p.purchasePrice||0, sellingPrice:+p.sellingPrice||0, lowStockAlert:+p.lowStockAlert||0}; }
 function normBill(b){
   if (typeof b.items==='string'){ try{b.items=JSON.parse(b.items);}catch(e){b.items=[];} }
@@ -412,7 +450,6 @@ function demoPost({action,row,id}){
   if(action==='addReturn'){row.id=uid();DB.returns.push(row);}
   return Promise.resolve({success:true});
 }
-
 function seedDemo(){
   DB.products=[
     {id:'p1',name:'Mineral Water',barcode:'8901234567',shop:'Bakery',qty:3,purchasePrice:40,sellingPrice:60,lowStockAlert:5,expiryDate:'',createdAt:today()},
@@ -445,6 +482,41 @@ function seedDemo(){
 }
 
 // ═══════════════════════════════════════════════════════
+// SETUP
+// ═══════════════════════════════════════════════════════
+function saveSetup(){
+  const url=val('setupUrl');
+  if(!url||!url.startsWith('https://script.google.com')){toast('Enter a valid Apps Script URL','warn');return;}
+  SCRIPT_URL=url;
+  localStorage.setItem('shopOS_url',url);
+  g('setupScreen').style.display='none';
+  g('loginScreen').style.display='flex';
+}
+function useDemoMode(){
+  DEMO=true;
+  seedDemo();
+  g('setupScreen').style.display='none';
+  g('loginScreen').style.display='flex';
+}
+function showSetupHelp(){
+  showModal(`
+    <div class="modal-head"><div class="modal-title">Setup Help</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div style="font-size:13px;line-height:1.8">
+      <p style="margin-bottom:12px">To connect ShopOS to Google Sheets:</p>
+      <ol style="padding-left:20px;margin-bottom:14px">
+        <li>Open <strong>Google Sheets</strong> and create a new spreadsheet</li>
+        <li>Go to <strong>Extensions → Apps Script</strong></li>
+        <li>Paste the backend script and save</li>
+        <li>Click <strong>Deploy → New deployment</strong></li>
+        <li>Choose <strong>Web app</strong>, set access to <em>Anyone</em></li>
+        <li>Copy the Web App URL and paste it in setup</li>
+      </ol>
+      <div class="alert alert-info" style="margin-bottom:0">💡 Use <strong>Demo Mode</strong> to explore without a database.</div>
+    </div>
+  `);
+}
+
+// ═══════════════════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════════════════
 function doLogin(){
@@ -461,6 +533,23 @@ function doLogout(){
   App.user=null;
   g('appShell').style.display='none';
   g('loginScreen').style.display='flex';
+}
+
+// ═══════════════════════════════════════════════════════
+// SHOW APP
+// ═══════════════════════════════════════════════════════
+async function showApp(){
+  g('loginScreen').style.display='none';
+  g('setupScreen').style.display='none';
+  g('appShell').style.display='block';
+  const u=App.user;
+  g('sAvatar').textContent=(u.name||'U')[0].toUpperCase();
+  g('sName').textContent=u.name||'User';
+  g('sRole').textContent=u.role==='admin'?'Administrator':'Cashier';
+  g('todayDate').textContent=new Date().toLocaleDateString('en-PK',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  setContent('<div class="loading"><div class="spinner"></div> Loading data…</div>');
+  await loadAll();
+  renderPage();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -574,7 +663,7 @@ function pgBilling(){
         <span class="badge bg-blue">${App.cart.length} item${App.cart.length!==1?'s':''}</span>
       </div>
       <div id="cartWrap">
-        ${App.cart.length===0?emptyState('🛒','Cart is empty', '20px'):
+        ${App.cart.length===0?emptyState('🛒','Cart is empty','20px'):
           App.cart.map((item,i)=>`<div class="cart-row">
             <div style="flex:1">
               <div class="cart-name">${esc(item.name)}</div>
@@ -617,10 +706,10 @@ function pickBillCust(id){ App.billCust=DB.customers.find(c=>c.id===id)||null; }
 function setPayMethod(m){ App.payMethod=m; renderPage(); }
 function setPayStatus(s){ App.payStatus=s; renderPage(); }
 
-function doProdSearch(val){
+function doProdSearch(v){
   const r=g('prodSuggest');
-  if(!val.trim()){r.style.display='none';App.selectedProduct=null;return;}
-  const matches=DB.products.filter(p=>p.name.toLowerCase().includes(val.toLowerCase())||String(p.barcode).includes(val)).slice(0,8);
+  if(!v.trim()){r.style.display='none';App.selectedProduct=null;return;}
+  const matches=DB.products.filter(p=>p.name.toLowerCase().includes(v.toLowerCase())||String(p.barcode).includes(v)).slice(0,8);
   if(!matches.length){r.style.display='none';return;}
   r.style.display='block';
   r.innerHTML=matches.map(p=>`<div class="sr-item" onclick="pickProduct('${p.id}')">
@@ -628,14 +717,12 @@ function doProdSearch(val){
     <div class="sr-sub">Barcode: ${p.barcode||'—'} | Price: ${fmt(p.sellingPrice)} | Stock: ${p.qty}</div>
   </div>`).join('');
 }
-
 function pickProduct(id){
   App.selectedProduct=DB.products.find(p=>p.id===id);
   if(g('prodSearchInput')) g('prodSearchInput').value=App.selectedProduct.name;
   if(g('prodSuggest')) g('prodSuggest').style.display='none';
   renderPage();
 }
-
 function addToCart(){
   if(!App.selectedProduct){toast('Select a product first','warn');return;}
   const qty=parseInt(g('addQtyInput')?.value||'1')||1;
@@ -655,7 +742,6 @@ async function completeBill(){
   let amountPaid=payableAmt;
   if(App.payStatus==='unpaid') amountPaid=0;
   if(App.payStatus==='partial') amountPaid=parseFloat(g('partialInput')?.value)||0;
-
   const bill={
     id:uid(), date:today(),
     customerId:App.billCust?.id||'walkin',
@@ -668,7 +754,6 @@ async function completeBill(){
   try {
     await apiPost({action:'addBill',row:bill});
     DB.bills.push(normBill({...bill,items:App.cart}));
-    // Update customer outstanding
     if(App.billCust){
       const due=payableAmt-amountPaid;
       const updC={...App.billCust,totalBilled:(+App.billCust.totalBilled||0)+payableAmt,outstanding:(+App.billCust.outstanding||0)+due};
@@ -676,7 +761,6 @@ async function completeBill(){
       const ci=DB.customers.findIndex(c=>c.id===App.billCust.id);
       if(ci>=0) DB.customers[ci]=updC;
     }
-    // Reduce stock
     for(const item of App.cart){
       const prod=DB.products.find(p=>p.id===item.productId);
       if(prod){ const nq=Math.max(0,prod.qty-item.qty); await apiPost({action:'updProduct',id:prod.id,row:{...prod,qty:nq}}); prod.qty=nq; }
@@ -694,7 +778,6 @@ function pgInventory(){
   let prods=DB.products;
   if(App.invFilter!=='all') prods=prods.filter(p=>p.shop===App.invFilter);
   const today60=new Date(); today60.setDate(today60.getDate()+60);
-
   return `
   <div class="sec-head">
     <div class="pill-group">
@@ -737,9 +820,7 @@ function pgInventory(){
     </div>
   </div>`;
 }
-
 function setInvFilter(f){ App.invFilter=f; renderPage(); }
-
 function showProdModal(id){
   const p=id?DB.products.find(x=>x.id===id):null;
   showModal(`
@@ -761,7 +842,6 @@ function showProdModal(id){
     <button class="btn btn-primary btn-block" onclick="saveProd('${id||''}')">Save Product</button>
   `);
 }
-
 async function saveProd(id){
   const row={name:val('pName'),barcode:val('pBarcode'),shop:val('pShop'),qty:+val('pQty')||0,purchasePrice:+val('pBuy')||0,sellingPrice:+val('pSell')||0,lowStockAlert:+val('pAlert')||0,expiryDate:val('pExpiry'),createdAt:today()};
   if(!row.name){toast('Product name is required','warn');return;}
@@ -780,7 +860,6 @@ async function saveProd(id){
     closeModal(); renderPage();
   }catch(e){toast('Error: '+e.message,'error');}
 }
-
 async function delProduct(id){
   if(!confirm('Delete this product from inventory?')) return;
   try{
@@ -888,7 +967,7 @@ async function saveCust(id){
       if(i>=0) DB.customers[i]={...DB.customers[i],...row};
       toast('Customer updated','success');
     }else{
-      row.id=uid(); row.totalBilled=0; row.outstanding=0;
+      row.id=uid();row.totalBilled=0;row.outstanding=0;
       await apiPost({action:'addCustomer',row});
       DB.customers.push(row);
       toast('Customer added','success');
@@ -1041,7 +1120,6 @@ function pgVendors(){
   const open=vOrders.filter(o=>o.status!=='paid');
   const paid=vOrders.filter(o=>o.status==='paid');
   const lowSugg=sel?DB.products.filter(p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert):[];
-
   return `
   <div class="${sel?'two-col':''}">
     <div>
@@ -1117,11 +1195,154 @@ function pgVendors(){
     `<div class="card" style="align-self:start">${emptyState('👈','Select a vendor to view orders')}</div>`}
   </div>`;
 }
-
 function selVendor(id){ App.selVendorId=id; renderPage(); }
 function openWA(phone){let c=phone.replace(/[^0-9]/g,'');if(c.startsWith('0'))c='92'+c.slice(1);window.open('https://wa.me/'+c,'_blank');}
 function showVendorModal(id){
   const v=id?DB.vendors.find(x=>x.id===id):null;
   showModal(`
     <div class="modal-head"><div class="modal-title">${v?'Edit Vendor':'Add Vendor'}</div><button class="modal-close" onclick="closeModal()">✕</button></div>
-    <div class="form-group"><label class="form-label">
+    <div class="form-group"><label class="form-label">Vendor Name *</label><input type="text" class="form-control" id="vName" value="${esc(v?.name||'')}"/></div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Phone / WhatsApp</label><input type="text" class="form-control" id="vPhone" value="${esc(v?.phone||'')}"/></div>
+      <div class="form-group"><label class="form-label">Products Supplied</label><input type="text" class="form-control" id="vProds" value="${esc(v?.products||'')}"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Opening Balance Due (₨)</label><input type="number" class="form-control" id="vBal" value="${+v?.balance||0}" min="0"/></div>
+    <button class="btn btn-primary btn-block" onclick="saveVendor('${id||''}')">Save Vendor</button>
+  `);
+}
+async function saveVendor(id){
+  const row={name:val('vName'),phone:val('vPhone'),products:val('vProds'),balance:+val('vBal')||0,createdAt:today()};
+  if(!row.name){toast('Vendor name required','warn');return;}
+  try{
+    if(id){
+      await apiPost({action:'updVendor',id,row});
+      const i=DB.vendors.findIndex(v=>v.id===id);
+      if(i>=0) DB.vendors[i]={...DB.vendors[i],...row};
+      toast('Vendor updated','success');
+    }else{
+      row.id=uid();
+      await apiPost({action:'addVendor',row});
+      DB.vendors.push(row);
+      toast('Vendor added','success');
+    }
+    closeModal(); renderPage();
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+async function delVendor(id){
+  if(!confirm('Delete this vendor?'))return;
+  try{
+    await apiPost({action:'delVendor',id});
+    DB.vendors=DB.vendors.filter(v=>v.id!==id);
+    if(App.selVendorId===id) App.selVendorId=null;
+    toast('Deleted','success'); renderPage();
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+async function placeOrder(vendorId,vendorName){
+  const items=val('ordItems'),amt=val('ordAmt'),date=val('ordDate')||today();
+  if(!items){toast('Enter order description','warn');return;}
+  const row={id:uid(),vendorId,vendorName,items,estimatedBill:+amt||0,actualBill:+amt||0,paid:0,due:+amt||0,date,status:'unpaid'};
+  try{
+    await apiPost({action:'addOrder',row});
+    DB.orders.push(row);
+    const v=DB.vendors.find(x=>x.id===vendorId);
+    if(v){const nb=(+v.balance||0)+(+amt||0);await apiPost({action:'updVendor',id:vendorId,row:{...v,balance:nb}});v.balance=nb;}
+    toast('Order placed','success'); renderPage();
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+async function updOrderBill(ordId,vendorId,newAmt){
+  const o=DB.orders.find(x=>x.id===ordId);if(!o)return;
+  const diff=(+newAmt||0)-(+o.actualBill||0);
+  o.actualBill=+newAmt||0;o.due=Math.max(0,o.actualBill-(+o.paid||0));
+  o.status=o.due===0?'paid':o.paid>0?'partial':'unpaid';
+  try{
+    await apiPost({action:'updOrder',id:ordId,row:o});
+    const v=DB.vendors.find(x=>x.id===vendorId);
+    if(v&&diff!==0){v.balance=(+v.balance||0)+diff;await apiPost({action:'updVendor',id:vendorId,row:v});}
+    renderPage();
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+async function recordVendorPay(ordId,vendorId,due){
+  const amt=parseFloat(prompt(`Amount to pay (due: ₨${due}):`));
+  if(!amt||amt<=0)return;
+  const actual=Math.min(amt,due);
+  const o=DB.orders.find(x=>x.id===ordId);if(!o)return;
+  o.paid=(+o.paid||0)+actual;o.due=Math.max(0,(+o.actualBill||0)-o.paid);
+  o.status=o.due===0?'paid':o.paid>0?'partial':'unpaid';
+  try{
+    await apiPost({action:'updOrder',id:ordId,row:o});
+    const v=DB.vendors.find(x=>x.id===vendorId);
+    if(v){v.balance=Math.max(0,(+v.balance||0)-actual);await apiPost({action:'updVendor',id:vendorId,row:v});}
+    toast(`₨${actual} paid`,'success'); renderPage();
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+
+// ═══════════════════════════════════════════════════════
+// ── ADMIN ──
+// ═══════════════════════════════════════════════════════
+function pgAdmin(){
+  if(App.user?.role!=='admin') return `<div class="card">${emptyState('🔒','Admin access only')}</div>`;
+  return `
+  <div class="two-col" style="align-items:start">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">System Info</div>
+        <div class="bill-row"><span>Products</span><strong>${DB.products.length}</strong></div>
+        <div class="bill-row"><span>Customers</span><strong>${DB.customers.length}</strong></div>
+        <div class="bill-row"><span>Bills</span><strong>${DB.bills.length}</strong></div>
+        <div class="bill-row"><span>Vendors</span><strong>${DB.vendors.length}</strong></div>
+        <div class="bill-row"><span>Mode</span><strong>${DEMO?'🟡 Demo Mode':'🟢 Live (Google Sheets)'}</strong></div>
+        <div class="bill-row"><span>Logged in as</span><strong>${esc(App.user?.name||'—')}</strong></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Database URL</div>
+        <div style="font-size:11px;color:var(--muted);word-break:break-all;margin-bottom:10px">${SCRIPT_URL||'Not configured (Demo mode)'}</div>
+        <button class="btn btn-sm btn-danger" onclick="if(confirm('Clear saved URL and reconfigure?')){localStorage.removeItem('shopOS_url');toast('URL cleared — refresh to reconfigure','success');}">Clear & Reconfigure</button>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Users</div>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Username</th><th>Name</th><th>Role</th></tr></thead>
+          <tbody>${USERS.map(u=>`<tr>
+            <td><code>${esc(u.username)}</code></td>
+            <td>${esc(u.name)}</td>
+            <td><span class="badge ${u.role==='admin'?'bg-purple':'bg-blue'}">${u.role}</span></td>
+          </tr>`).join('')}</tbody>
+        </table></div>
+        <div class="alert alert-info" style="margin-top:12px;margin-bottom:0">To add/edit users, update the <code>USERS</code> array in index.html</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Actions</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn" onclick="loadAll().then(()=>{renderPage();toast('Data reloaded','success');})">🔄 Reload Data from DB</button>
+          <button class="btn btn-danger" onclick="if(confirm('Clear session and reload?')){sessionStorage.clear();location.reload();}">🗑️ Clear Session & Reload</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// ── BOOT — fixes blank page ──
+// ═══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Register service worker
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  }
+  // Restore session if exists
+  const saved = sessionStorage.getItem('shopOS_user');
+  if(saved){
+    try{ App.user=JSON.parse(saved); showApp(); return; }catch(e){}
+  }
+  // Show setup if no URL configured, else show login
+  if(SCRIPT_URL){
+    g('loginScreen').style.display='flex';
+  } else {
+    g('setupScreen').style.display='flex';
+  }
+});
+</script>
+</body>
+</html>
