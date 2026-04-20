@@ -1,0 +1,2914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>U-Tech-POS ® — Point of Sale</title>
+
+<!-- PWA Meta Tags -->
+<meta name="application-name" content="U-Tech-POS">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="U-Tech-POS">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1e1b4b">
+<meta name="description" content="NAWAB BAKERS AND MOBILE — Point of Sale System">
+
+<!-- PWA Manifest (inline as data URI) -->
+<link rel="manifest" id="pwaManifest">
+
+<!-- Apple Touch Icons (inline SVG converted to PNG via canvas) -->
+<link rel="apple-touch-icon" id="appleTouchIcon">
+<link rel="icon" type="image/png" id="faviconIcon">
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--p:#4f46e5;--p2:#3730a3;--pl:#e0e7ff;--ps:#c7d2fe;--ok:#059669;--okl:#d1fae5;--warn:#d97706;--warnl:#fef3c7;--err:#dc2626;--errl:#fee2e2;--tx:#111827;--muted:#6b7280;--hint:#9ca3af;--bd:#e5e7eb;--bg:#f3f4f6;--card:#ffffff;--sw:230px;--th:56px;--r:10px;--rs:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:'DM Sans',sans-serif}
+.hidden{display:none!important}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.bold{font-weight:600}.sm{font-size:12px}.muted{color:var(--muted)}.mono{font-family:'DM Mono',monospace;font-size:12px}
+.full-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e1b4b 0%,#312e81 100%)}
+.auth-card{background:var(--card);border-radius:16px;padding:40px;width:380px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.brand-row{display:flex;align-items:center;gap:14px;margin-bottom:28px}
+.logo-box{width:44px;height:44px;background:var(--p);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:var(--sw);background:#1e1b4b;color:#fff;display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:200}
+.sb-logo{padding:16px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.sb-brand{font-size:15px;font-weight:600}.sb-tag{font-size:10px;color:rgba(255,255,255,.35)}
+.sb-nav{flex:1;overflow-y:auto;padding:8px 0}
+.nav-sec{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);padding:12px 16px 4px;text-transform:uppercase;letter-spacing:.08em}
+.nav-link{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:13px;color:rgba(255,255,255,.6);cursor:pointer;transition:all .15s;position:relative;user-select:none;border:none;background:none;width:100%;text-align:left}
+.nav-link:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-link.active{background:rgba(79,70,229,.3);color:#fff}
+.nav-link.active::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:3px;background:var(--p);border-radius:0 2px 2px 0}
+.nav-ic{width:18px;text-align:center;font-size:14px}
+.sb-foot{padding:14px 16px;border-top:1px solid rgba(255,255,255,.1);flex-shrink:0}
+.sb-user{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.s-av{width:34px;height:34px;background:var(--p);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0}
+.s-nm{font-size:13px;font-weight:500}.s-rl{font-size:11px;color:rgba(255,255,255,.4)}
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--bd);padding:0 24px;height:var(--th);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px}
+.tb-title{font-size:16px;font-weight:600}
+.tb-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.content{padding:22px;flex:1}
+.card{background:var(--card);border-radius:var(--r);border:1px solid var(--bd);padding:20px}
+.card+.card{margin-top:14px}
+.card-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.metric{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:18px 20px}
+.metric-lbl{font-size:12px;color:var(--muted);margin-bottom:5px}
+.metric-val{font-size:24px;font-weight:600;line-height:1.2}
+.metric-sub{font-size:11px;color:var(--hint);margin-top:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 14px;border-radius:var(--rs);border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;line-height:1.4}
+.btn:hover{background:var(--bg)}.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--p);color:#fff;border-color:var(--p)}.btn-primary:hover{background:var(--p2);border-color:var(--p2)}
+.btn-ok{background:var(--ok);color:#fff;border-color:var(--ok)}.btn-ok:hover{background:#047857}
+.btn-danger{color:var(--err);border-color:#fca5a5}.btn-danger:hover{background:var(--errl)}
+.btn-wa{background:#25d366;color:#fff;border-color:#25d366}.btn-wa:hover{background:#1da851}
+.btn-warn{background:var(--warn);color:#fff;border-color:var(--warn)}
+.btn-sm{padding:5px 10px;font-size:12px}.btn-xs{padding:3px 8px;font-size:11px}
+.btn-block{width:100%;padding:10px}
+.btn-ghost{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff}.btn-ghost:hover{background:rgba(255,255,255,.2)}
+.f-group{margin-bottom:14px}
+.f-label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px}
+.f-ctrl{width:100%;padding:8px 10px;border:1px solid var(--bd);border-radius:var(--rs);font-size:13px;color:var(--tx);background:var(--card);outline:none;transition:border-color .15s}
+.f-ctrl:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+.tbl-wrap{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:10px 12px;background:var(--bg);border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--bd);font-size:13px;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:#fafafa}
+.tbl .acts{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.b-green{background:var(--okl);color:#065f46}.b-red{background:var(--errl);color:#991b1b}
+.b-amber{background:var(--warnl);color:#92400e}.b-blue{background:var(--pl);color:#3730a3}
+.b-purple{background:#ede9fe;color:#5b21b6}.b-gray{background:#f3f4f6;color:#4b5563}
+.b-indigo{background:#e0e7ff;color:#3730a3}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{padding:6px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--card);color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.pill:hover{border-color:var(--p);color:var(--p)}.pill.on{background:var(--p);color:#fff;border-color:var(--p)}
+.alert{border-radius:var(--rs);padding:10px 14px;font-size:13px;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.alert-warn{background:var(--warnl);color:#78350f;border:1px solid #fde68a}
+.alert-err{background:var(--errl);color:#7f1d1d;border:1px solid #fca5a5}
+.alert-info{background:var(--pl);color:#312e81;border:1px solid var(--ps)}
+.alert-ok{background:var(--okl);color:#064e3b;border:1px solid #6ee7b7}
+.divider{height:1px;background:var(--bd);margin:14px 0}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+.sec-title{font-size:16px;font-weight:600}
+.empty{text-align:center;padding:32px 20px;color:var(--hint)}
+.empty-ic{font-size:28px;margin-bottom:6px}.empty-tx{font-size:13px}
+.spinner{width:20px;height:20px;border:2px solid var(--bd);border-top-color:var(--p);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:60px;color:var(--muted)}
+.cols-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cols-3-2{display:grid;grid-template-columns:3fr 2fr;gap:16px}
+.srch-wrap{position:relative}
+.srch-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid var(--bd);border-radius:var(--rs);box-shadow:0 6px 20px rgba(0,0,0,.1);z-index:500;overflow:hidden;max-height:240px;overflow-y:auto}
+.sr-item{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--bd)}
+.sr-item:last-child{border-bottom:none}.sr-item:hover{background:var(--bg)}
+.sr-name{font-weight:500;font-size:13px}.sr-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.cart-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--bd)}
+.cart-row:last-child{border-bottom:none}
+.cart-rm{background:none;border:none;cursor:pointer;color:var(--err);font-size:15px;opacity:.7;padding:0 2px;line-height:1}
+.cart-rm:hover{opacity:1}
+.bill-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px}
+.bill-row.big{font-size:16px;font-weight:600;padding:10px 0}
+.stock-bar{height:5px;background:var(--bd);border-radius:3px;overflow:hidden;margin-top:4px}
+.stock-fill{height:100%;border-radius:3px}
+.sf-ok{background:var(--ok)}.sf-warn{background:var(--warn)}.sf-low{background:var(--err)}
+.av{width:48px;height:48px;border-radius:50%;background:var(--pl);color:var(--p);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;flex-shrink:0}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-box{background:var(--card);border-radius:14px;padding:28px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-size:16px;font-weight:600}
+.modal-x{width:28px;height:28px;border:none;background:var(--bg);border-radius:50%;cursor:pointer;font-size:16px;color:var(--muted)}
+.modal-x:hover{background:var(--bd)}
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:2000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;font-size:13px;min-width:220px;max-width:360px;animation:tIn .2s ease;pointer-events:auto;font-weight:500}
+.toast-info{background:#1f2937;color:#fff}.toast-ok{background:#065f46;color:#fff}
+.toast-err{background:#7f1d1d;color:#fff}.toast-warn{background:#78350f;color:#fff}
+@keyframes tIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.visit-card{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;border-left:4px solid var(--p)}
+.pay-hist-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bd)}
+.pay-hist-row:last-child{border-bottom:none}
+.wa-option{border:2px solid var(--bd);border-radius:var(--r);padding:16px;cursor:pointer;transition:all .15s;text-align:center}
+.wa-option:hover{border-color:var(--p);background:var(--pl)}
+.wa-option.sel{border-color:#25d366;background:#f0fdf4}
+.wa-option-ic{font-size:28px;margin-bottom:6px}
+.wa-option-tx{font-size:13px;font-weight:500}
+.adv-badge{background:#ede9fe;color:#5b21b6;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.pay-type-btn{border:2px solid var(--bd);border-radius:var(--rs);padding:12px;cursor:pointer;text-align:center;transition:all .15s;background:var(--card)}
+.pay-type-btn:hover{border-color:var(--p);background:var(--pl)}
+.pay-type-btn.sel{border-color:var(--p);background:var(--pl)}
+.pay-type-btn .pt-ic{font-size:22px;margin-bottom:4px}
+.pay-type-btn .pt-tx{font-size:12px;font-weight:600;color:var(--tx)}
+.pay-type-btn .pt-sub{font-size:11px;color:var(--muted)}
+.print-area{display:none}
+@media print{
+  body *{visibility:hidden}
+  .print-area,  .print-area *{visibility:visible}
+  .print-area{display:block!important;position:fixed;left:0;top:0;width:100%;padding:20px}
+}
+@media(max-width:1100px){.metrics{grid-template-columns:1fr 1fr}.cols-2,.cols-3-2{grid-template-columns:1fr}}
+@media(max-width:768px){.sidebar{width:56px}.sb-brand,.sb-tag,.s-nm,.s-rl,.nav-link .nav-lbl,.sb-foot .s-nm,.sb-foot .s-rl{display:none}.nav-link{justify-content:center;padding:12px}.main{margin-left:56px}.content{padding:14px}.metrics{grid-template-columns:1fr 1fr}}
+
+/* ── BARCODE SCANNER ── */
+.scanner-modal{position:fixed;inset:0;background:#000;z-index:5000;display:flex;flex-direction:column}
+.scanner-topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:rgba(0,0,0,.8);flex-shrink:0}
+.scanner-topbar-title{color:#fff;font-weight:600;font-size:16px}
+.scanner-video-wrap{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.scanner-video-wrap video{width:100%;height:100%;object-fit:cover}
+.scanner-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.scanner-frame{width:260px;height:160px;position:relative}
+.scanner-frame::before,.scanner-frame::after{content:'';position:absolute;width:40px;height:40px;border-color:#4f46e5;border-style:solid}
+.scanner-frame::before{top:0;left:0;border-width:4px 0 0 4px;border-radius:4px 0 0 0}
+.scanner-frame::after{bottom:0;right:0;border-width:0 4px 4px 0;border-radius:0 0 4px 0}
+.scanner-frame-tr{position:absolute;top:0;right:0;width:40px;height:40px;border-top:4px solid #4f46e5;border-right:4px solid #4f46e5;border-radius:0 4px 0 0}
+.scanner-frame-bl{position:absolute;bottom:0;left:0;width:40px;height:40px;border-bottom:4px solid #4f46e5;border-left:4px solid #4f46e5;border-radius:0 0 0 4px}
+.scanner-line{position:absolute;left:8px;right:8px;height:2px;background:linear-gradient(90deg,transparent,#4f46e5,transparent);animation:scanLine 2s ease-in-out infinite;top:50%}
+@keyframes scanLine{0%,100%{top:10%}50%{top:90%}}
+.scanner-hint{position:absolute;bottom:24px;left:0;right:0;text-align:center;color:rgba(255,255,255,.7);font-size:13px;padding:0 20px}
+.scanner-result{background:rgba(79,70,229,.95);color:#fff;padding:14px 20px;text-align:center;flex-shrink:0;display:none}
+.scanner-result.show{display:block}
+.scanner-status{position:absolute;top:16px;left:0;right:0;text-align:center;font-size:12px;color:rgba(255,255,255,.5)}
+.scan-btn{background:none;border:1.5px solid var(--bd);border-radius:var(--rs);padding:7px 10px;cursor:pointer;color:var(--muted);font-size:16px;line-height:1;transition:all .15s;display:inline-flex;align-items:center;justify-content:center}
+.scan-btn:hover{border-color:var(--p);color:var(--p);background:var(--pl)}
+.pwa-banner{position:fixed;bottom:0;left:0;right:0;background:#1e1b4b;color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;z-index:3000;box-shadow:0 -4px 20px rgba(0,0,0,.3);padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+.pwa-banner-icon{width:44px;height:44px;background:var(--p);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pwa-banner-text{flex:1}
+.pwa-banner-title{font-weight:600;font-size:14px}
+.pwa-banner-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:2px}
+.pwa-banner-btns{display:flex;gap:8px;flex-shrink:0}
+.pwa-offline-bar{position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;text-align:center;font-size:12px;font-weight:500;padding:6px;z-index:4000;display:none}
+body{padding-bottom:env(safe-area-inset-bottom)}
+</style>
+</head>
+<body>
+<div class="toast-wrap" id="toastWrap"></div>
+<div id="printArea" class="print-area"></div>
+
+<!-- BARCODE SCANNER MODAL -->
+<div id="scannerModal" class="scanner-modal hidden">
+  <div class="scanner-topbar">
+    <div class="scanner-topbar-title">📷 Scan Barcode</div>
+    <button onclick="closeScanner()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">✕ Close</button>
+  </div>
+  <div class="scanner-video-wrap">
+    <video id="scannerVideo" playsinline autoplay muted></video>
+    <div class="scanner-overlay">
+      <div class="scanner-frame">
+        <div class="scanner-frame-tr"></div>
+        <div class="scanner-frame-bl"></div>
+        <div class="scanner-line"></div>
+      </div>
+    </div>
+    <div class="scanner-status" id="scannerStatus">Starting camera…</div>
+    <div class="scanner-hint">Point camera at barcode</div>
+  </div>
+  <div class="scanner-result" id="scannerResult">
+    <div id="scannerResultText" style="font-weight:600;font-size:15px;margin-bottom:4px"></div>
+    <div style="font-size:12px;opacity:.8">Tap to scan another</div>
+  </div>
+  <!-- torch button -->
+  <div style="display:flex;justify-content:center;gap:12px;padding:14px;background:rgba(0,0,0,.8);flex-shrink:0">
+    <button id="torchBtn" onclick="toggleTorch()" style="background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);color:#fff;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">🔦 Torch</button>
+    <button onclick="switchCamera()" style="background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);color:#fff;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">🔄 Flip Camera</button>
+  </div>
+</div>
+
+<!-- Offline indicator -->
+<div class="pwa-offline-bar" id="offlineBar">⚠️ You are offline — changes will sync when reconnected</div>
+
+<!-- PWA Install Banner -->
+<div class="pwa-banner hidden" id="pwaBanner">
+  <div class="pwa-banner-icon">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  </div>
+  <div class="pwa-banner-text">
+    <div class="pwa-banner-title">Install U-Tech-POS</div>
+    <div class="pwa-banner-sub">Add to home screen for app experience</div>
+  </div>
+  <div class="pwa-banner-btns">
+    <button class="btn btn-sm" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2);color:#fff" onclick="dismissPWA()">Later</button>
+    <button class="btn btn-sm" style="background:#fff;color:#1e1b4b;border-color:#fff;font-weight:600" onclick="installPWA()">Install</button>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="setupScreen" class="full-screen hidden">
+  <div class="auth-card" style="max-width:520px">
+    <div class="brand-row">
+      <div class="logo-box"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <div><div style="font-size:20px;font-weight:600">U-Tech-POS ® Setup</div><div style="font-size:12px;color:var(--muted)">Connect your Supabase database</div></div>
+    </div>
+    <div class="alert alert-info">🔌 Enter your <strong>Supabase Project URL</strong> and <strong>Anon Key</strong> to connect. <a href="javascript:void(0)" onclick="showHelp()" style="font-weight:600">Setup guide →</a></div>
+    <div class="f-group">
+      <label class="f-label">Supabase Project URL</label>
+      <input type="url" class="f-ctrl" id="setupUrl" placeholder="https://xyzxyzxyz.supabase.co"/>
+    </div>
+    <div class="f-group">
+      <label class="f-label">Supabase Anon Key</label>
+      <input type="text" class="f-ctrl" id="setupKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…" style="font-size:11px"/>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="saveSetup()">Connect &amp; Continue</button>
+    <div style="text-align:center;margin-top:10px"><button class="btn btn-sm muted" onclick="useDemoMode()">Use Demo Mode (no database)</button></div>
+  </div>
+</div>
+
+<!-- HELP MODAL -->
+<div id="helpModal" class="modal-bg hidden">
+  <div class="modal-box" style="max-width:660px">
+    <div class="modal-hd"><div class="modal-title">Supabase Setup Guide</div><button class="modal-x" onclick="g('helpModal').classList.add('hidden')">✕</button></div>
+    <div style="font-size:13px;line-height:1.9;color:var(--muted)">
+      <p><strong style="color:var(--tx)">1. Create a Supabase project</strong> — Go to <a href="https://supabase.com" target="_blank">supabase.com</a>, sign up free, and create a new project. Wait for it to finish setting up (~2 min).</p>
+      <p style="margin-top:10px"><strong style="color:var(--tx)">2. Run the SQL below</strong> — In your project go to <strong>SQL Editor → New Query</strong>, paste the SQL below and click Run. This creates all the tables.</p>
+      <p style="margin-top:10px"><strong style="color:var(--tx)">3. Get your credentials</strong> — Go to <strong>Settings → API</strong>. Copy your <em>Project URL</em> and <em>anon public</em> key.</p>
+      <p style="margin-top:10px"><strong style="color:var(--tx)">4. Paste in U-Tech-POS</strong> — Enter both values in the setup screen and click Connect.</p>
+      <p style="margin-top:10px"><strong style="color:var(--tx)">5. Deploy on Vercel</strong> — Upload the HTML file to a GitHub repo, connect it on <a href="https://vercel.com" target="_blank">vercel.com</a> and deploy. Done!</div>
+      <div class="f-group" style="margin-top:14px">
+        <label class="f-label">SQL — Run this in Supabase SQL Editor (copy all)</label>
+        <textarea class="f-ctrl" rows="20" readonly style="font-family:'DM Mono',monospace;font-size:11px;background:var(--bg)">-- U-Tech-POS Database Schema
+-- Run this entire script in Supabase SQL Editor
+
+create table if not exists products (
+  id text primary key,
+  name text not null,
+  barcode text,
+  shop text,
+  qty numeric default 0,
+  "purchasePrice" numeric default 0,
+  "sellingPrice" numeric default 0,
+  "lowStockAlert" numeric default 0,
+  "expiryDate" text,
+  "createdAt" text
+);
+
+create table if not exists customers (
+  id text primary key,
+  name text not null,
+  phone text,
+  "totalBilled" numeric default 0,
+  outstanding numeric default 0,
+  "advanceBalance" numeric default 0,
+  "createdAt" text
+);
+
+create table if not exists bills (
+  id text primary key,
+  date text,
+  "customerId" text,
+  "customerName" text,
+  "customerType" text,
+  items text,
+  "totalAmount" numeric default 0,
+  "payableAmount" numeric default 0,
+  "paymentMethod" text,
+  "paymentStatus" text,
+  "amountPaid" numeric default 0
+);
+
+create table if not exists vendors (
+  id text primary key,
+  name text not null,
+  phone text,
+  products text,
+  description text,
+  balance numeric default 0,
+  "advanceBalance" numeric default 0,
+  "createdAt" text
+);
+
+create table if not exists orders (
+  id text primary key,
+  "vendorId" text,
+  "vendorName" text,
+  items text,
+  "estimatedBill" numeric default 0,
+  "actualBill" numeric default 0,
+  paid numeric default 0,
+  due numeric default 0,
+  date text,
+  status text,
+  "deliveryDate" text,
+  "nextVendorVisit" text
+);
+
+create table if not exists returns (
+  id text primary key,
+  date text,
+  "customerName" text,
+  "returnedProduct" text,
+  "returnedQty" numeric default 0,
+  reason text,
+  "returnType" text,
+  "newProduct" text,
+  "newQty" numeric default 0,
+  "priceDiff" numeric default 0
+);
+
+create table if not exists "vendorPayments" (
+  id text primary key,
+  date text,
+  "vendorId" text,
+  "vendorName" text,
+  amount numeric default 0,
+  method text,
+  note text,
+  "paymentType" text
+);
+
+create table if not exists "customerPayments" (
+  id text primary key,
+  date text,
+  "customerId" text,
+  "customerName" text,
+  "billId" text,
+  amount numeric default 0,
+  method text,
+  note text,
+  "paymentType" text
+);
+
+create table if not exists expenses (
+  id text primary key,
+  date text,
+  amount numeric default 0,
+  category text,
+  description text,
+  "paidBy" text,
+  note text
+);
+
+-- Enable Row Level Security
+alter table products enable row level security;
+alter table customers enable row level security;
+alter table bills enable row level security;
+alter table vendors enable row level security;
+alter table orders enable row level security;
+alter table returns enable row level security;
+alter table "vendorPayments" enable row level security;
+alter table "customerPayments" enable row level security;
+alter table expenses enable row level security;
+
+-- Allow all access with anon key
+create policy "allow all" on products for all using (true) with check (true);
+create policy "allow all" on customers for all using (true) with check (true);
+create policy "allow all" on bills for all using (true) with check (true);
+create policy "allow all" on vendors for all using (true) with check (true);
+create policy "allow all" on orders for all using (true) with check (true);
+create policy "allow all" on returns for all using (true) with check (true);
+create policy "allow all" on "vendorPayments" for all using (true) with check (true);
+create policy "allow all" on "customerPayments" for all using (true) with check (true);
+create policy "allow all" on expenses for all using (true) with check (true);</textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="full-screen hidden">
+  <div class="auth-card">
+    <div class="brand-row">
+      <div class="logo-box"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <div><div style="font-size:20px;font-weight:600">U-Tech-POS ®</div><div style="font-size:12px;color:var(--muted)">Point of Sale System</div></div>
+    </div>
+    <div class="f-group"><label class="f-label">Username</label><input class="f-ctrl" id="liU" placeholder="Enter username" autofocus/></div>
+    <div class="f-group"><label class="f-label">Password</label><input type="password" class="f-ctrl" id="liP" placeholder="Enter password"/></div>
+    <div id="liErr" class="alert alert-err hidden">Invalid username or password.</div>
+    <button class="btn btn-primary btn-block" style="padding:11px" onclick="doLogin()">Sign In</button>
+    <p class="sm muted" style="text-align:center;margin-top:10px">Default: <strong>admin</strong> / <strong>admin123</strong></p>
+    <div style="text-align:center;margin-top:6px"><button class="btn btn-sm muted" onclick="g('setupScreen').classList.remove('hidden');g('loginScreen').classList.add('hidden')">Change database</button></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="appShell" class="hidden">
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sb-logo">
+        <div class="logo-box" style="width:32px;height:32px;border-radius:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div><div class="sb-brand">U-Tech-POS ®</div><div class="sb-tag">Point of Sale</div></div>
+      </div>
+      <div class="sb-nav">
+        <div class="nav-sec">Main</div>
+        <button class="nav-link active" data-p="dashboard" onclick="nav('dashboard',this)"><span class="nav-ic">⊞</span><span class="nav-lbl">Dashboard</span></button>
+        <button class="nav-link" data-p="billing" onclick="nav('billing',this)"><span class="nav-ic">🧾</span><span class="nav-lbl">Billing</span></button>
+        <div class="nav-sec">Store</div>
+        <button class="nav-link" data-p="inventory" onclick="nav('inventory',this)"><span class="nav-ic">📦</span><span class="nav-lbl">Inventory</span></button>
+        <button class="nav-link" data-p="customers" onclick="nav('customers',this)"><span class="nav-ic">👥</span><span class="nav-lbl">Customers</span></button>
+        <button class="nav-link" data-p="returns" onclick="nav('returns',this)"><span class="nav-ic">↩️</span><span class="nav-lbl">Returns</span></button>
+        <div class="nav-sec">Finance</div>
+        <button class="nav-link" data-p="vendors" onclick="nav('vendors',this)"><span class="nav-ic">🏪</span><span class="nav-lbl">Vendors</span></button>
+        <button class="nav-link" data-p="payments" onclick="nav('payments',this)"><span class="nav-ic">💰</span><span class="nav-lbl">Payments</span></button>
+        <button class="nav-link" data-p="expenses" onclick="nav('expenses',this)"><span class="nav-ic">💸</span><span class="nav-lbl">Expenses</span></button>
+        <button class="nav-link" data-p="reports" onclick="nav('reports',this)"><span class="nav-ic">📊</span><span class="nav-lbl">Reports</span></button>
+        <div class="nav-sec">System</div>
+        <button class="nav-link" data-p="billtemplate" onclick="nav('billtemplate',this)"><span class="nav-ic">🖨️</span><span class="nav-lbl">Bill Template</span></button>
+        <button class="nav-link" data-p="admin" onclick="nav('admin',this)"><span class="nav-ic">⚙️</span><span class="nav-lbl">Admin</span></button>
+      </div>
+      <div class="sb-foot">
+        <div class="sb-user"><div class="s-av" id="sAv">A</div><div><div class="s-nm" id="sNm">Admin</div><div class="s-rl" id="sRl">Administrator</div></div></div>
+        <button class="btn btn-sm btn-ghost" style="width:100%" onclick="doLogout()">Sign Out</button>
+      </div>
+    </nav>
+    <div class="main">
+      <div class="topbar">
+        <div class="tb-title" id="tbTitle">Dashboard</div>
+        <div class="tb-right" id="tbRight"></div>
+      </div>
+      <div class="content" id="pageArea"><div class="loading"><div class="spinner"></div>&nbsp;Loading…</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+'use strict';
+
+/* ── HELPERS (must be first — used in state init) ── */
+const g=id=>document.getElementById(id);
+const val=id=>(g(id)?.value||'').trim();
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fmt=n=>'₨ '+Math.round(+n||0).toLocaleString();
+const today=()=>new Date().toISOString().slice(0,10);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const normP=p=>({...p,qty:+p.qty||0,purchasePrice:+(p.purchasePrice||p['purchasePrice'])||0,sellingPrice:+(p.sellingPrice||p['sellingPrice'])||0,lowStockAlert:+(p.lowStockAlert||p['lowStockAlert'])||0});
+function normB(b){
+  let items=b.items;
+  if(typeof items==='string'){try{items=JSON.parse(items);}catch{items=[];}}
+  if(!Array.isArray(items))items=[];
+  return{...b,items,
+    totalAmount:+b.totalAmount||0,
+    payableAmount:+b.payableAmount||0,
+    amountPaid:+b.amountPaid||0};
+}
+
+/* ── USERS (stored in localStorage, editable by admin) ── */
+function getUsers(){
+  try{const u=localStorage.getItem('utpos_users');return u?JSON.parse(u):[{u:'admin',p:'admin123',role:'admin',name:'Admin'},{u:'cashier',p:'cashier123',role:'cashier',name:'Cashier'}];}
+  catch{return [{u:'admin',p:'admin123',role:'admin',name:'Admin'}];}
+}
+function saveUsers(arr){localStorage.setItem('utpos_users',JSON.stringify(arr));}
+
+/* ── STATE ── */
+let SB_URL=localStorage.getItem('utpos_sb_url')||'https://ylzgrzmvkqdyvmpvmcto.supabase.co';
+let SB_KEY=localStorage.getItem('utpos_sb_key')||'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlsemdyem12a3FkeXZtcHZtY3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDc1NDQsImV4cCI6MjA5MTY4MzU0NH0.basx-igh_AfIjovgoP1cky-q8bRAJwRvkIwbzSddBJI';
+let DEMO=localStorage.getItem('utpos_demo')==='1';
+const DB={products:[],customers:[],bills:[],vendors:[],orders:[],returns:[],vendorPayments:[],customerPayments:[],expenses:[]};
+let CUR={page:'dashboard',user:null,cart:[],billCustType:'walkin',billCust:null,payMethod:'cash',payStatus:'paid',selProd:null,invFilter:'all',retMode:'return',retCustId:null,retBillStatus:'',selVendor:null,custProfileId:null,
+  rptType:'sales',rptPeriod:'daily',rptFrom:today(),rptTo:today(),rptVendors:[],rptCustomers:[]};
+const SHOP_NAME='NAWAB BAKERS AND MOBILE';
+
+/* ── SUPABASE TABLE MAP ── */
+const TBL={
+  getProducts:'products',getCustomers:'customers',getBills:'bills',
+  getVendors:'vendors',getOrders:'orders',getReturns:'returns',
+  getVendorPayments:'vendorPayments',getCustomerPayments:'customerPayments',
+  getExpenses:'expenses'
+};
+
+/* ── SUPABASE API ── */
+function sbHeaders(prefer='return=representation'){
+  return {
+    'Content-Type':'application/json',
+    'apikey':SB_KEY,
+    'Authorization':'Bearer '+SB_KEY,
+    'Prefer':prefer,
+    'Accept':'application/json'
+  };
+}
+async function apiGet(action){
+  if(DEMO)return demoGet(action);
+  const tbl=TBL[action];if(!tbl)return[];
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/${tbl}?select=*`,{headers:sbHeaders()});
+    if(!r.ok){const txt=await r.text();throw new Error(r.status+': '+txt.slice(0,100));}
+    const data=await r.json();
+    return Array.isArray(data)?data:[];
+  }catch(e){toast('DB: '+e.message,'err');return[];}
+}
+async function apiPost({action,row,id}){
+  if(DEMO)return demoPost({action,row,id});
+  // Determine table
+  const tblMap={
+    addProduct:'products',updProduct:'products',delProduct:'products',
+    addCustomer:'customers',updCustomer:'customers',delCustomer:'customers',
+    addBill:'bills',updBill:'bills',
+    addVendor:'vendors',updVendor:'vendors',delVendor:'vendors',
+    addOrder:'orders',updOrder:'orders',delOrder:'orders',
+    addReturn:'returns',
+    addVendorPayment:'vendorPayments',updVendorPayment:'vendorPayments',
+    addCustomerPayment:'customerPayments',
+    addExpense:'expenses',updExpense:'expenses',delExpense:'expenses'
+  };
+  const tbl=tblMap[action];if(!tbl)throw new Error('Unknown action: '+action);
+  try{
+    if(action.startsWith('add')){
+      const r=await fetch(`${SB_URL}/rest/v1/${tbl}`,{method:'POST',headers:sbHeaders('return=minimal'),body:JSON.stringify(row)});
+      if(!r.ok)throw new Error(await r.text());
+      return {success:true};
+    }
+    if(action.startsWith('upd')){
+      const patchHeaders={...sbHeaders(),'Content-Type':'application/json','Prefer':'return=minimal'};
+      const r=await fetch(`${SB_URL}/rest/v1/${tbl}?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:patchHeaders,body:JSON.stringify(row)});
+      if(!r.ok)throw new Error(await r.text());
+      return {success:true};
+    }
+    if(action.startsWith('del')){
+      const r=await fetch(`${SB_URL}/rest/v1/${tbl}?id=eq.${encodeURIComponent(id)}`,{method:'DELETE',headers:sbHeaders('return=minimal')});
+      if(!r.ok)throw new Error(await r.text());
+      return {success:true};
+    }
+  }catch(e){toast('DB error: '+e.message,'err');throw e;}
+}
+async function loadAll(){
+  try{
+    const [pr,cu,bi,ve,or,re,vp,cp,ex]=await Promise.all([
+      apiGet('getProducts'),apiGet('getCustomers'),apiGet('getBills'),apiGet('getVendors'),
+      apiGet('getOrders'),apiGet('getReturns'),apiGet('getVendorPayments'),apiGet('getCustomerPayments'),
+      apiGet('getExpenses')
+    ]);
+    DB.products=(pr||[]).map(normP);DB.customers=cu||[];DB.bills=(bi||[]).map(normB);
+    DB.vendors=ve||[];DB.orders=or||[];DB.returns=re||[];
+    DB.vendorPayments=vp||[];DB.customerPayments=cp||[];DB.expenses=ex||[];
+  }catch(e){toast('Failed to load data','err');}
+}
+
+/* ── WA MODAL GLOBALS ── */
+let _waBill='',_waOrder='';
+function setWAOpt(t){
+  const bill=document.getElementById('waOptBill');
+  const ord=document.getElementById('waOptOrd');
+  const msg=document.getElementById('waMsg');
+  if(bill)bill.classList.toggle('sel',t==='bill');
+  if(ord)ord.classList.toggle('sel',t==='order');
+  if(msg)msg.value=t==='bill'?_waBill:_waOrder;
+}
+
+/* ── GLOBAL MODAL STATE ── */
+let _cPayType='regular';
+let _vPayType='regular';
+let _tplLayout='thermal';
+function setCPayType(t){
+  _cPayType=t;
+  const r=document.getElementById('ctRegular'),a=document.getElementById('ctAdvance'),n=document.getElementById('cPayTypeNote');
+  if(r)r.classList.toggle('sel',t==='regular');
+  if(a)a.classList.toggle('sel',t==='advance');
+  if(n){n.textContent=t==='regular'?'Payment applied to oldest pending bills first.':'Advance stored as credit — auto-applied on next billing.';n.className='alert '+(t==='advance'?'alert-warn':'alert-info');}
+}
+function setVPayType(t){
+  _vPayType=t;
+  const r=document.getElementById('ptRegular'),a=document.getElementById('ptAdvance'),n=document.getElementById('vPayTypeNote');
+  if(r)r.classList.toggle('sel',t==='regular');
+  if(a)a.classList.toggle('sel',t==='advance');
+  if(n){n.textContent=t==='regular'?'Regular payment applied to open bills oldest first.':'Advance stored as credit — auto-applied to future orders.';n.className='alert '+(t==='advance'?'alert-warn':'alert-info');}
+}
+function setTplLayout(t){
+  _tplLayout=t;
+  const th=document.getElementById('tlThermal'),a4=document.getElementById('tlA4');
+  if(th)th.classList.toggle('sel',t==='thermal');
+  if(a4)a4.classList.toggle('sel',t==='a4');
+  tplLivePreview();
+}
+function tplLivePreview(){
+  const keyMap={tShop:'shopName',tAddr:'shopAddress',tPhone:'shopPhone',tEmail:'shopEmail',tHdr:'headerNote',tFtr:'footerNote',tPaper:'paperSize',tFont:'fontSize',tColor:'accentColor'};
+  const tpl={layout:_tplLayout};
+  Object.entries(keyMap).forEach(([id,k])=>{const el=document.getElementById(id);if(el)tpl[k]=el.value;});
+  const prev=document.getElementById('tplPreview');
+  if(prev){prev.style.fontSize=tpl.fontSize||'13px';prev.style.maxWidth=tpl.paperSize==='58mm'?'200px':tpl.paperSize==='80mm'?'280px':'100%';prev.innerHTML=buildBillPreviewHTML(tpl);}
+}
+// Hook live preview inputs after template page renders
+function initTplListeners(){
+  ['tShop','tAddr','tPhone','tEmail','tHdr','tFtr','tPaper','tFont','tColor'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.addEventListener('input',tplLivePreview);
+  });
+}
+
+
+
+/* ── DEMO MODE ── */
+function demoGet(a){const m={getProducts:DB.products,getCustomers:DB.customers,getBills:DB.bills,getVendors:DB.vendors,getOrders:DB.orders,getReturns:DB.returns,getVendorPayments:DB.vendorPayments,getCustomerPayments:DB.customerPayments,getExpenses:DB.expenses};return Promise.resolve(m[a]||[]);}
+function demoPost({action,row,id}){
+  const add=(arr,r)=>{r.id=uid();arr.push(r);return r;};
+  const upd=(arr,r,i)=>{const x=arr.findIndex(a=>a.id==i);if(x>=0)arr[x]={...arr[x],...r};};
+  const del=(arr,i)=>{const x=arr.findIndex(a=>a.id==i);if(x>=0)arr.splice(x,1);};
+  if(action==='addProduct')add(DB.products,normP({...row}));
+  if(action==='updProduct')upd(DB.products,normP({...row}),id);
+  if(action==='delProduct')del(DB.products,id);
+  if(action==='addCustomer')add(DB.customers,{...row});
+  if(action==='updCustomer')upd(DB.customers,{...row},id);
+  if(action==='delCustomer')del(DB.customers,id);
+  if(action==='addBill'){const r={...row};if(typeof r.items!=='string')r.items=JSON.stringify(r.items||[]);add(DB.bills,normB(r));}
+  if(action==='updBill'){const r={...row};if(typeof r.items!=='string')r.items=JSON.stringify(r.items||[]);upd(DB.bills,normB(r),id);}
+  if(action==='addVendor')add(DB.vendors,{...row});
+  if(action==='updVendor')upd(DB.vendors,{...row},id);
+  if(action==='delVendor')del(DB.vendors,id);
+  if(action==='addOrder')add(DB.orders,{...row});
+  if(action==='updOrder')upd(DB.orders,{...row},id);
+  if(action==='delOrder')del(DB.orders,id);
+  if(action==='addReturn')add(DB.returns,{...row});
+  if(action==='addVendorPayment')add(DB.vendorPayments,{...row});
+  if(action==='updVendorPayment')upd(DB.vendorPayments,{...row},id);
+  if(action==='addCustomerPayment')add(DB.customerPayments,{...row});
+  if(action==='addExpense')add(DB.expenses,{...row});
+  if(action==='updExpense')upd(DB.expenses,{...row},id);
+  if(action==='delExpense')del(DB.expenses,id);
+  return Promise.resolve({success:true});
+}
+function seedDemo(){
+  DB.products=[
+    {id:'p1',name:'Mineral Water',barcode:'8901234567',shop:'Bakery',qty:3,purchasePrice:40,sellingPrice:60,lowStockAlert:5,expiryDate:''},
+    {id:'p2',name:'Milk Packets',barcode:'8909876543',shop:'Bakery',qty:48,purchasePrice:80,sellingPrice:110,lowStockAlert:10,expiryDate:'2026-06-15'},
+    {id:'p3',name:'USB Cable',barcode:'7654321098',shop:'Mobile',qty:2,purchasePrice:180,sellingPrice:350,lowStockAlert:5,expiryDate:''},
+    {id:'p4',name:'Phone Cover',barcode:'1122334455',shop:'Mobile',qty:22,purchasePrice:90,sellingPrice:200,lowStockAlert:5,expiryDate:''},
+    {id:'p5',name:'Bread Loaf',barcode:'5544332211',shop:'Bakery',qty:35,purchasePrice:70,sellingPrice:120,lowStockAlert:8,expiryDate:'2026-08-01'},
+  ];
+  DB.customers=[
+    {id:'c1',name:'Ali Hassan',phone:'0300-1234567',totalBilled:15200,outstanding:4470,advanceBalance:0},
+    {id:'c2',name:'Sara Khan',phone:'0311-9876543',totalBilled:8400,outstanding:850,advanceBalance:500},
+    {id:'c3',name:'Bilal Ahmed',phone:'0321-5554433',totalBilled:22000,outstanding:0,advanceBalance:0},
+  ];
+  DB.bills=[
+    {id:'b1',date:'2026-04-08',customerId:'c1',customerName:'Ali Hassan',customerType:'registered',items:[{productId:'p3',name:'USB Cable',qty:1,price:350,shop:'Mobile'},{productId:'p1',name:'Mineral Water',qty:3,price:60,shop:'Bakery'}],totalAmount:530,payableAmount:530,paymentMethod:'cash',paymentStatus:'unpaid',amountPaid:0},
+    {id:'b2',date:'2026-04-05',customerId:'c1',customerName:'Ali Hassan',customerType:'registered',items:[{productId:'p5',name:'Bread Loaf',qty:5,price:120,shop:'Bakery'},{productId:'p2',name:'Milk Packets',qty:4,price:110,shop:'Bakery'}],totalAmount:1040,payableAmount:1040,paymentMethod:'cash',paymentStatus:'partial',amountPaid:100},
+    {id:'b3',date:'2026-04-10',customerId:'c2',customerName:'Sara Khan',customerType:'registered',items:[{productId:'p4',name:'Phone Cover',qty:1,price:200,shop:'Mobile'}],totalAmount:200,payableAmount:200,paymentMethod:'online',paymentStatus:'partial',amountPaid:0},
+    {id:'b4',date:today(),customerId:'walkin',customerName:'Walk-in',customerType:'walkin',items:[{productId:'p5',name:'Bread Loaf',qty:2,price:120,shop:'Bakery'}],totalAmount:240,payableAmount:240,paymentMethod:'cash',paymentStatus:'paid',amountPaid:240},
+  ];
+  const td=today();
+  DB.vendors=[
+    {id:'v1',name:'Karachi Traders',phone:'0300-9988776',products:'Beverages, Dairy',description:'Supplier from National Foods & Nestle. Visits every Monday.',balance:45000,advanceBalance:0},
+    {id:'v2',name:'Mobile Hub',phone:'0311-7766554',products:'Accessories, Cables',description:'Mobile accessories from China imports. Visits bi-weekly.',balance:0,advanceBalance:2000},
+  ];
+  DB.orders=[
+    {id:'o1',vendorId:'v1',vendorName:'Karachi Traders',items:'Beverages — 500 pcs',estimatedBill:30000,actualBill:30000,paid:10000,due:20000,date:'2026-03-15',status:'partial',deliveryDate:'',nextVendorVisit:td},
+    {id:'o2',vendorId:'v1',vendorName:'Karachi Traders',items:'Water — 200 bottles',estimatedBill:25000,actualBill:25000,paid:0,due:25000,date:'2026-04-01',status:'unpaid',deliveryDate:'',nextVendorVisit:''},
+    {id:'o3',vendorId:'v2',vendorName:'Mobile Hub',items:'Cables — 50 pcs',estimatedBill:18000,actualBill:18000,paid:18000,due:0,date:'2026-02-10',status:'paid',deliveryDate:'2026-02-15',nextVendorVisit:''},
+  ];
+  DB.vendorPayments=[
+    {id:'vp1',date:'2026-03-20',vendorId:'v1',vendorName:'Karachi Traders',amount:10000,note:'Partial payment via bank transfer',method:'Online'},
+  ];
+  DB.customerPayments=[
+    {id:'cp1',date:'2026-04-05',customerId:'c1',customerName:'Ali Hassan',billId:'b2',amount:100,note:'Partial cash payment'},
+  ];
+  DB.returns=[];
+}
+
+/* ── AUTH ── */
+function doLogin(){
+  const u=val('liU'),p=g('liP').value;
+  const USERS=getUsers();
+  const user=USERS.find(x=>x.u===u&&x.p===p);
+  if(!user){g('liErr').classList.remove('hidden');return;}
+  g('liErr').classList.add('hidden');CUR.user=user;
+  // Persist session so refresh doesn't log out
+  sessionStorage.setItem('utpos_session',JSON.stringify(user));
+  localStorage.setItem('utpos_session',JSON.stringify(user));
+  g('loginScreen').classList.add('hidden');showApp();
+}
+function doLogout(){
+  CUR.user=null;
+  sessionStorage.removeItem('utpos_session');
+  localStorage.removeItem('utpos_session');
+  g('appShell').classList.add('hidden');g('loginScreen').classList.remove('hidden');
+}
+function saveSetup(){
+  const url=val('setupUrl');const key=val('setupKey');
+  if(!url.startsWith('https')||!key){toast('Enter both Supabase URL and Anon Key','warn');return;}
+  SB_URL=url.replace(/\/$/,'');SB_KEY=key;
+  localStorage.setItem('utpos_sb_url',SB_URL);localStorage.setItem('utpos_sb_key',SB_KEY);
+  localStorage.removeItem('utpos_demo');DEMO=false;
+  g('setupScreen').classList.add('hidden');g('loginScreen').classList.remove('hidden');
+  toast('Supabase connected!','ok');
+}
+function useDemoMode(){
+  DEMO=true;localStorage.setItem('utpos_demo','1');
+  seedDemo();g('setupScreen').classList.add('hidden');g('loginScreen').classList.remove('hidden');
+}
+function showHelp(){g('helpModal').classList.remove('hidden');}
+
+/* ── APP INIT ── */
+async function showApp(){
+  g('sAv').textContent=CUR.user.name.charAt(0).toUpperCase();
+  g('sNm').textContent=CUR.user.name;g('sRl').textContent=CUR.user.role;
+  g('appShell').classList.remove('hidden');
+  g('pageArea').innerHTML='<div class="loading"><div class="spinner"></div>&nbsp;Loading data…</div>';
+  refreshTopbar();
+  try{await loadAll();}catch(e){}
+  renderPage();
+  refreshTopbar();
+}
+
+/* ── NAV ── */
+function nav(page,el){
+  CUR.page=page;
+  document.querySelectorAll('.nav-link').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  const titles={dashboard:'Dashboard',billing:'New Bill',inventory:'Inventory',customers:'Customers',returns:'Returns',vendors:'Vendors',payments:'Payment History',expenses:'Daily Expenses',reports:'Reports',billtemplate:'Bill Template',admin:'Admin Panel'};
+  g('tbTitle').textContent=titles[page]||page;
+  renderPage();
+}
+function renderPage(){
+  const fns={dashboard:pgDash,billing:pgBilling,inventory:pgInventory,customers:()=>pgCustomers(CUR.custProfileId),returns:pgReturns,vendors:pgVendors,payments:pgPayments,expenses:pgExpenses,reports:pgReports,billtemplate:pgBillTemplate,admin:pgAdmin};
+  const fn=fns[CUR.page];if(fn)g('pageArea').innerHTML=fn();
+  if(CUR.page==='billtemplate'){_tplLayout=getTpl().layout;setTimeout(initTplListeners,50);}
+}
+function goPage(page){document.querySelectorAll('.nav-link').forEach(x=>x.classList.toggle('active',x.dataset.p===page));CUR.page=page;const titles={dashboard:'Dashboard',billing:'New Bill',inventory:'Inventory',customers:'Customers',returns:'Returns',vendors:'Vendors',payments:'Payment History',expenses:'Daily Expenses',reports:'Reports',billtemplate:'Bill Template',admin:'Admin Panel'};g('tbTitle').textContent=titles[page]||page;renderPage();}
+
+/* ── TOPBAR ── */
+function refreshTopbar(){
+  const low=DB.products.filter(p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert);
+  const exp=DB.products.filter(p=>{if(!p.expiryDate)return false;const d=(new Date(p.expiryDate)-new Date())/864e5;return d>0&&d<=60;});
+  const td=today();
+  const visits=DB.orders.filter(o=>o.nextVendorVisit===td&&o.status!=='paid');
+  let h='';
+  if(visits.length)h+=`<span class="badge b-indigo" style="cursor:pointer" onclick="goPage('dashboard')">📅 ${visits.length} visit${visits.length>1?'s':''} today</span>`;
+  if(low.length)h+=`<span class="badge b-amber">⚠️ ${low.length} Low Stock</span>`;
+  if(exp.length)h+=`<span class="badge b-red">⏰ ${exp.length} Expiring</span>`;
+  h+=`<span class="sm muted">${new Date().toLocaleDateString('en-PK',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</span>`;
+  g('tbRight').innerHTML=h;
+}
+
+/* ── BADGE HELPERS ── */
+function sBadge(s){return{paid:'<span class="badge b-green">Paid</span>',unpaid:'<span class="badge b-red">Unpaid</span>',partial:'<span class="badge b-amber">Partial</span>'}[s]||s;}
+function shBadge(s){return s==='Bakery'?'<span class="badge b-blue">Bakery</span>':'<span class="badge b-purple">Mobile</span>';}
+function muted(s){return `<span class="muted sm">${s}</span>`;}
+function emptyEl(ic,tx,p='32px'){return `<div class="empty" style="padding:${p}"><div class="empty-ic">${ic}</div><div class="empty-tx">${tx}</div></div>`;}
+
+/* ── MODAL ── */
+function showModal(html,wide){
+  let el=g('gModal');
+  if(!el){el=document.createElement('div');el.id='gModal';el.className='modal-bg';document.body.appendChild(el);}
+  el.innerHTML=`<div class="modal-box" style="${wide?'max-width:720px':''}">${html}</div>`;
+  el.classList.remove('hidden');
+  el.onclick=e=>{if(e.target===el)closeModal();};
+}
+function closeModal(){const el=g('gModal');if(el)el.classList.add('hidden');}
+
+/* ── TOAST ── */
+function toast(msg,type='info'){
+  const t=document.createElement('div');
+  t.className='toast toast-'+(type==='ok'?'ok':type==='err'?'err':type==='warn'?'warn':'info');
+  t.textContent=msg;g('toastWrap').appendChild(t);setTimeout(()=>t.remove(),3500);
+}
+
+/* ══════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════ */
+function pgDash(){
+  const td=today();
+  const todBills=DB.bills.filter(b=>b.date===td);
+  const todSales=todBills.reduce((s,b)=>s+(b.paymentStatus==='paid'?b.payableAmount:+b.amountPaid||0),0);
+  const unpaid=DB.bills.filter(b=>b.paymentStatus!=='paid').length;
+  const dues=DB.customers.reduce((s,c)=>s+(+c.outstanding||0),0);
+  const low=DB.products.filter(p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert);
+  const exp=DB.products.filter(p=>{if(!p.expiryDate)return false;const d=(new Date(p.expiryDate)-new Date())/864e5;return d>0&&d<=60;});
+  const todVisits=DB.orders.filter(o=>o.nextVendorVisit===td&&o.status!=='paid');
+  const todDeliveries=DB.orders.filter(o=>o.deliveryDate===td&&o.status!=='paid');
+  const recent=[...DB.bills].reverse().slice(0,6);
+  const vendorDues=DB.vendors.reduce((s,v)=>s+(+v.balance||0),0);
+  return `
+  <div class="metrics">
+    <div class="metric"><div class="metric-lbl">Today's Sales</div><div class="metric-val">${fmt(todSales)}</div><div class="metric-sub">${todBills.length} bill(s) today</div></div>
+    <div class="metric"><div class="metric-lbl">Customer Dues</div><div class="metric-val" style="color:var(--err)">${fmt(dues)}</div><div class="metric-sub">${unpaid} unpaid bills</div></div>
+    <div class="metric"><div class="metric-lbl">Vendor Balance</div><div class="metric-val" style="color:var(--warn)">${fmt(vendorDues)}</div><div class="metric-sub">Owed to vendors</div></div>
+    <div class="metric"><div class="metric-lbl">Products</div><div class="metric-val">${DB.products.length}</div><div class="metric-sub">${low.length} low stock</div></div>
+  </div>
+  ${low.length?`<div class="alert alert-warn">⚠️ <strong>Low stock:</strong> ${low.map(p=>`${esc(p.name)} (${p.qty})`).join(' &bull; ')}</div>`:''}
+  ${exp.length?`<div class="alert alert-err">⏰ <strong>Expiring ≤60 days:</strong> ${exp.map(p=>`${esc(p.name)} — ${p.expiryDate}`).join(' &bull; ')}</div>`:''}
+  ${todVisits.length||todDeliveries.length?`
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+    ${todVisits.length?`<div class="card" style="border-left:4px solid var(--p)">
+      <div class="card-title" style="color:var(--p)">📅 Vendor Visits Today (${todVisits.length})</div>
+      ${todVisits.map(o=>{
+        const v=DB.vendors.find(x=>x.id===o.vendorId);
+        return `<div style="padding:10px 0;border-bottom:1px solid var(--bd)">
+          <div style="font-weight:600">${esc(o.vendorName)}</div>
+          ${v?.description?`<div class="sm muted">${esc(v.description)}</div>`:''}
+          <div class="sm muted">Order: ${esc(o.items)}</div>
+          <div class="sm" style="color:var(--err);margin-top:3px">Due: ${fmt(o.due)}</div>
+          <button class="btn btn-wa btn-xs" style="margin-top:6px" onclick="openWA('${esc(v?.phone||'')}')">📱 WhatsApp</button>
+        </div>`;
+      }).join('')}
+    </div>`:emptyEl('📅','No vendor visits today')}
+    ${todDeliveries.length?`<div class="card" style="border-left:4px solid var(--ok)">
+      <div class="card-title" style="color:var(--ok)">🚚 Expected Deliveries Today (${todDeliveries.length})</div>
+      ${todDeliveries.map(o=>`<div style="padding:10px 0;border-bottom:1px solid var(--bd)">
+        <div style="font-weight:600">${esc(o.vendorName)}</div>
+        <div class="sm muted">${esc(o.items)}</div>
+        <div class="sm" style="margin-top:3px">Bill: ${fmt(+o.actualBill||+o.estimatedBill||0)}</div>
+      </div>`).join('')}
+    </div>`:''}
+  </div>`:''} 
+  <div class="cols-2">
+    <div class="card">
+      <div class="card-title">Recent Bills</div>
+      ${recent.length?`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Customer</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+        ${recent.map(b=>`<tr><td><strong>${esc(b.customerName)}</strong></td><td class="sm muted">${b.date}</td><td>${fmt(b.payableAmount)}</td><td>${sBadge(b.paymentStatus)}</td></tr>`).join('')}
+      </tbody></table></div>`:emptyEl('🧾','No bills yet')}
+    </div>
+    <div class="card">
+      <div class="card-title">Vendor Balances</div>
+      ${DB.vendors.filter(v=>+v.balance>0).length?`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Vendor</th><th>Balance Due</th><th></th></tr></thead><tbody>
+        ${DB.vendors.filter(v=>+v.balance>0).map(v=>`<tr>
+          <td><strong>${esc(v.name)}</strong><div class="sm muted">${esc(v.description||'')}</div></td>
+          <td style="color:var(--err);font-weight:600">${fmt(+v.balance||0)}</td>
+          <td><button class="btn btn-sm btn-primary" onclick="showMakeVendorPayModal('${v.id}')">Pay</button></td>
+        </tr>`).join('')}
+      </tbody></table></div>`:emptyEl('✅','No vendor dues')}
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════
+   BILLING
+══════════════════════════════════════ */
+function pgBilling(){
+  const total=CUR.cart.reduce((s,i)=>s+i.price*i.qty,0);
+  return `
+  <div class="cols-3-2" style="align-items:start">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Customer</div>
+        <div class="pills" style="margin-bottom:12px">
+          <button class="pill ${CUR.billCustType==='walkin'?'on':''}" onclick="setBCT('walkin')">Walk-in</button>
+          <button class="pill ${CUR.billCustType==='registered'?'on':''}" onclick="setBCT('registered')">From List</button>
+        </div>
+        ${CUR.billCustType==='registered'?`<select class="f-ctrl" onchange="pickBC(this.value)">
+          <option value="">— Select customer —</option>
+          ${DB.customers.map(c=>`<option value="${c.id}" ${CUR.billCust?.id===c.id?'selected':''}>${esc(c.name)} — ${c.phone}</option>`).join('')}
+        </select>`:'<div class="sm muted">Walk-in sale — no customer record</div>'}
+      </div>
+      <div class="card">
+        <div class="card-title">Add Product</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <div class="srch-wrap" style="flex:1;min-width:180px">
+            <input class="f-ctrl" id="pSrch" placeholder="Search name or scan barcode…" oninput="doPSrch(this.value)" autocomplete="off" value="${esc(CUR.selProd?CUR.selProd.name:'')}"/>
+            <div class="srch-drop hidden" id="pDrop"></div>
+          </div>
+          <button class="scan-btn" onclick="openScanner('billing')" title="Scan barcode with camera">📷</button>
+          <input type="number" class="f-ctrl" id="addQty" value="1" min="1" style="width:72px"/>
+          <button class="btn btn-primary" onclick="addToCart()">+ Add</button>
+        </div>
+        ${CUR.selProd?`<div class="alert alert-info" style="margin-bottom:0"><strong>${esc(CUR.selProd.name)}</strong> ${shBadge(CUR.selProd.shop)} — ${fmt(CUR.selProd.sellingPrice)} &bull; Stock: ${CUR.selProd.qty}</div>`:''}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="display:flex;justify-content:space-between"><span>Cart</span><span class="badge b-blue">${CUR.cart.length} item${CUR.cart.length!==1?'s':''}</span></div>
+      ${CUR.cart.length===0?emptyEl('🛒','Cart is empty','16px'):
+        CUR.cart.map((it,i)=>`<div class="cart-row">
+          <div style="flex:1"><div style="font-weight:500;font-size:13px">${esc(it.name)}</div><div class="sm muted">${shBadge(it.shop)} &bull; ${fmt(it.price)} each</div></div>
+          <input type="number" class="f-ctrl" value="${it.qty}" min="1" style="width:58px;padding:5px 7px" onchange="updQty(${i},this.value)"/>
+          <div style="min-width:68px;text-align:right;font-weight:600">${fmt(it.price*it.qty)}</div>
+          <button class="cart-rm" onclick="rmCart(${i})">✕</button>
+        </div>`).join('')}
+      <div class="divider"></div>
+      <div class="bill-row"><span class="muted">Total Amount</span><span>${fmt(total)}</span></div>
+      <div class="bill-row big">
+        <span>Payable Amount</span>
+        <input type="number" class="f-ctrl" id="payableIn" value="${total}" style="width:130px;text-align:right;font-weight:600;font-size:15px;padding:6px 8px"/>
+      </div>
+      <div class="divider"></div>
+      <div class="card-title">Payment Method</div>
+      <div class="pills" style="margin-bottom:12px">
+        <button class="pill ${CUR.payMethod==='cash'?'on':''}" onclick="setPM('cash')">Cash</button>
+        <button class="pill ${CUR.payMethod==='online'?'on':''}" onclick="setPM('online')">Online</button>
+      </div>
+      <div class="card-title">Payment Status</div>
+      <div class="pills" style="margin-bottom:12px">
+        <button class="pill ${CUR.payStatus==='paid'?'on':''}" onclick="setPS('paid')">Paid</button>
+        <button class="pill ${CUR.payStatus==='unpaid'?'on':''}" onclick="setPS('unpaid')">Unpaid</button>
+        <button class="pill ${CUR.payStatus==='partial'?'on':''}" onclick="setPS('partial')">Partial</button>
+      </div>
+      ${CUR.payStatus==='partial'?`<div class="f-group"><label class="f-label">Amount Paid Now (₨)</label><input type="number" class="f-ctrl" id="partialIn" placeholder="0"/></div>`:''}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <button class="btn btn-ok" onclick="completeBill('save')">✓ Save Bill</button>
+        <button class="btn btn-primary" onclick="completeBill('print')">🖨 Print Bill</button>
+      </div>
+      <button class="btn btn-wa" style="width:100%" onclick="completeBill('send')">📱 Print &amp; Send WhatsApp</button>
+    </div>
+  </div>`;
+}
+function setBCT(t){CUR.billCustType=t;CUR.billCust=null;renderPage();}
+function pickBC(id){CUR.billCust=DB.customers.find(c=>c.id===id)||null;}
+function setPM(m){CUR.payMethod=m;renderPage();}
+function setPS(s){CUR.payStatus=s;renderPage();}
+function doPSrch(v){
+  const dr=g('pDrop');if(!v){dr.classList.add('hidden');CUR.selProd=null;return;}
+  const hits=DB.products.filter(p=>p.name.toLowerCase().includes(v.toLowerCase())||String(p.barcode).includes(v)).slice(0,8);
+  if(!hits.length){dr.classList.add('hidden');return;}
+  dr.classList.remove('hidden');
+  dr.innerHTML=hits.map(p=>`<div class="sr-item" onclick="pickProd('${p.id}')"><div class="sr-name">${esc(p.name)} ${shBadge(p.shop)}</div><div class="sr-sub">Barcode: ${p.barcode||'—'} | Price: ${fmt(p.sellingPrice)} | Stock: ${p.qty}</div></div>`).join('');
+}
+function pickProd(id){CUR.selProd=DB.products.find(p=>p.id===id);const inp=g('pSrch');if(inp)inp.value=CUR.selProd.name;const dr=g('pDrop');if(dr)dr.classList.add('hidden');renderPage();}
+function addToCart(){
+  if(!CUR.selProd){toast('Select a product first','warn');return;}
+  const qty=Math.max(1,parseInt(g('addQty')?.value||'1')||1);
+  const ex=CUR.cart.find(i=>i.productId===CUR.selProd.id);
+  if(ex)ex.qty+=qty;else CUR.cart.push({productId:CUR.selProd.id,name:CUR.selProd.name,shop:CUR.selProd.shop,price:CUR.selProd.sellingPrice,qty});
+  CUR.selProd=null;renderPage();
+}
+function updQty(i,v){CUR.cart[i].qty=Math.max(1,parseInt(v)||1);renderPage();}
+function rmCart(i){CUR.cart.splice(i,1);renderPage();}
+
+async function completeBill(mode='save'){
+  if(!CUR.cart.length){toast('Cart is empty','warn');return;}
+  const totalAmount=CUR.cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const payable=parseFloat(g('payableIn')?.value)||totalAmount;
+  let paid=payable;
+  if(CUR.payStatus==='unpaid')paid=0;
+  if(CUR.payStatus==='partial')paid=parseFloat(g('partialIn')?.value)||0;
+  const bill={id:uid(),date:today(),customerId:CUR.billCust?.id||'walkin',customerName:CUR.billCust?.name||'Walk-in',customerType:CUR.billCustType,items:JSON.stringify(CUR.cart),totalAmount,payableAmount:payable,paymentMethod:CUR.payMethod,paymentStatus:CUR.payStatus,amountPaid:paid};
+  try{
+    await apiPost({action:'addBill',row:bill});
+    const savedBill=normB({...bill,items:CUR.cart});DB.bills.push(savedBill);
+    if(CUR.billCust){
+      const due=payable-paid;
+      const adv=+CUR.billCust.advanceBalance||0;
+      // Auto-apply advance credit if customer has it
+      let effectiveDue=due;let newAdv=adv;
+      if(adv>0&&due>0){const applying=Math.min(adv,due);effectiveDue=due-applying;newAdv=adv-applying;if(applying>0)toast(`${fmt(applying)} advance credit auto-applied!`,'ok');}
+      const uc={...CUR.billCust,totalBilled:(+CUR.billCust.totalBilled||0)+payable,outstanding:(+CUR.billCust.outstanding||0)+effectiveDue,advanceBalance:newAdv};
+      await apiPost({action:'updCustomer',id:CUR.billCust.id,row:uc});
+      const ci=DB.customers.findIndex(c=>c.id===CUR.billCust.id);if(ci>=0)DB.customers[ci]=uc;
+    }
+    for(const item of CUR.cart){const pr=DB.products.find(p=>p.id===item.productId);if(pr){const nq=Math.max(0,pr.qty-item.qty);await apiPost({action:'updProduct',id:pr.id,row:{...pr,qty:nq}});pr.qty=nq;}}
+    if(mode==='print'||mode==='send'){printBill(savedBill,mode==='send');}
+    CUR.cart=[];CUR.payStatus='paid';CUR.selProd=null;CUR.billCust=null;
+    refreshTopbar();toast('Bill saved!','ok');renderPage();
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
+function printBill(bill,sendWA=false){printBillWithTpl(bill,getTpl(),sendWA);}
+function printBillWithTpl(bill,tpl,sendWA=false){
+  const items=Array.isArray(bill.items)?bill.items:[];
+  const accent=tpl.accentColor||'#4f46e5';
+  const maxW=tpl.paperSize==='58mm'?'220px':tpl.paperSize==='80mm'?'320px':tpl.paperSize==='half'?'420px':'680px';
+  const fs=tpl.fontSize||'13px';
+  let bodyHTML='';
+  if(tpl.layout==='a4'){
+    bodyHTML=`
+    <div style="max-width:${maxW};margin:0 auto;padding:24px;font-size:${fs};font-family:Arial,sans-serif;color:#111">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid ${accent}">
+        <div>
+          <div style="font-size:22px;font-weight:700;color:${accent}">${esc(tpl.shopName||SHOP_NAME)}</div>
+          ${tpl.shopAddress?`<div style="font-size:12px;color:#555;margin-top:2px">${esc(tpl.shopAddress)}</div>`:''}
+          ${tpl.shopPhone?`<div style="font-size:12px;color:#555">📞 ${esc(tpl.shopPhone)}</div>`:''}
+          ${tpl.shopEmail?`<div style="font-size:12px;color:#555">✉️ ${esc(tpl.shopEmail)}</div>`:''}
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:18px;font-weight:700;color:${accent}">INVOICE</div>
+          <div style="font-size:12px;color:#555;margin-top:4px">Date: ${bill.date}</div>
+          <div style="font-size:12px;color:#555">Bill #: ${bill.id.slice(-8).toUpperCase()}</div>
+        </div>
+      </div>
+      ${tpl.headerNote?`<div style="font-size:12px;color:#888;margin-bottom:14px;text-align:center">${esc(tpl.headerNote)}</div>`:''}
+      <div style="background:#f8f8f8;padding:10px 14px;border-radius:6px;margin-bottom:16px;font-size:12px">
+        <strong>Customer:</strong> ${esc(bill.customerName)}
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:${fs};margin-bottom:16px">
+        <thead>
+          <tr style="background:${accent};color:#fff">
+            <th style="padding:8px 12px;text-align:left">#</th>
+            <th style="padding:8px 12px;text-align:left">Item</th>
+            <th style="padding:8px 12px;text-align:center">Qty</th>
+            <th style="padding:8px 12px;text-align:right">Price</th>
+            <th style="padding:8px 12px;text-align:right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>${items.map((i,idx)=>`
+          <tr style="background:${idx%2===0?'#fff':'#f5f5f5'}">
+            <td style="padding:8px 12px;color:#888">${idx+1}</td>
+            <td style="padding:8px 12px">${esc(i.name)}</td>
+            <td style="padding:8px 12px;text-align:center">${i.qty}</td>
+            <td style="padding:8px 12px;text-align:right">₨${i.price}</td>
+            <td style="padding:8px 12px;text-align:right">₨${i.price*i.qty}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+        <table style="font-size:${fs};border-collapse:collapse;min-width:220px">
+          <tr><td style="padding:5px 12px;color:#555">Subtotal</td><td style="padding:5px 12px;text-align:right">₨${bill.totalAmount}</td></tr>
+          <tr style="font-weight:700;font-size:15px;color:${accent};border-top:2px solid ${accent}">
+            <td style="padding:8px 12px">Total Payable</td><td style="padding:8px 12px;text-align:right">₨${bill.payableAmount}</td>
+          </tr>
+          <tr><td style="padding:5px 12px;color:#555">Paid</td><td style="padding:5px 12px;text-align:right">₨${bill.amountPaid}</td></tr>
+          ${bill.amountPaid<bill.payableAmount?`<tr style="color:#dc2626"><td style="padding:5px 12px">Balance Due</td><td style="padding:5px 12px;text-align:right">₨${bill.payableAmount-bill.amountPaid}</td></tr>`:''}
+        </table>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#888;border-top:1px solid #eee;padding-top:10px">
+        <span>Payment: ${bill.paymentMethod} | Status: ${bill.paymentStatus}</span>
+        <span>${tpl.footerNote?esc(tpl.footerNote):''}</span>
+      </div>
+    </div>`;
+  } else {
+    // Thermal layout
+    bodyHTML=`
+    <div style="max-width:${maxW};margin:0 auto;padding:14px 10px;font-size:${fs};font-family:'Courier New',monospace;color:#000;text-align:center">
+      <div style="font-size:17px;font-weight:700;color:${accent}">${esc(tpl.shopName||SHOP_NAME)}</div>
+      ${tpl.shopAddress?`<div style="font-size:10px">${esc(tpl.shopAddress)}</div>`:''}
+      ${tpl.shopPhone?`<div style="font-size:10px">${esc(tpl.shopPhone)}</div>`:''}
+      ${tpl.headerNote?`<div style="font-size:10px;color:#555;margin-top:2px">${esc(tpl.headerNote)}</div>`:''}
+      <div style="border-top:1px dashed #000;margin:8px 0"></div>
+      <div style="text-align:left;font-size:10px">Date: ${bill.date} | Bill: ${bill.id.slice(-6).toUpperCase()}</div>
+      <div style="text-align:left;font-size:10px">Customer: ${esc(bill.customerName)}</div>
+      <div style="border-top:1px dashed #000;margin:8px 0"></div>
+      <table style="width:100%;border-collapse:collapse;font-size:10px">
+        ${items.map(i=>`<tr><td style="text-align:left;padding:2px 0">${esc(i.name)}</td><td style="padding:2px 4px">x${i.qty}</td><td style="text-align:right;padding:2px 0">₨${i.price*i.qty}</td></tr>`).join('')}
+      </table>
+      <div style="border-top:1px dashed #000;margin:8px 0"></div>
+      <table style="width:100%;border-collapse:collapse;font-size:${fs}">
+        <tr><td style="text-align:left">Total</td><td style="text-align:right">₨${bill.totalAmount}</td></tr>
+        <tr style="font-weight:700;color:${accent}"><td style="text-align:left">Payable</td><td style="text-align:right">₨${bill.payableAmount}</td></tr>
+        <tr><td style="text-align:left">Paid</td><td style="text-align:right">₨${bill.amountPaid}</td></tr>
+        ${bill.amountPaid<bill.payableAmount?`<tr style="color:#dc2626"><td style="text-align:left">Balance Due</td><td style="text-align:right">₨${bill.payableAmount-bill.amountPaid}</td></tr>`:''}
+      </table>
+      <div style="border-top:1px dashed #000;margin:8px 0"></div>
+      <div style="font-size:10px;color:#555">Payment: ${bill.paymentMethod} | ${bill.paymentStatus}</div>
+      ${tpl.footerNote?`<div style="font-size:10px;margin-top:5px">${esc(tpl.footerNote)}</div>`:''}
+    </div>`;
+  }
+  const fullHTML=`<!DOCTYPE html><html><head><title>Bill #${bill.id}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#f5f5f5;padding:20px}
+    @media print{body{background:#fff;padding:0}.no-print{display:none!important}}
+  </style></head><body>
+  <div class="no-print" style="text-align:center;margin-bottom:16px;display:flex;gap:10px;justify-content:center">
+    <button onclick="window.print()" style="padding:8px 20px;background:#4f46e5;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨 Print</button>
+    <button onclick="window.close()" style="padding:8px 20px;background:#f3f4f6;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-size:14px">✕ Close</button>
+  </div>
+  ${bodyHTML}
+  <\/body><\/html>`;
+  const win=window.open('','_blank');win.document.write(fullHTML);win.document.close();
+  if(!sendWA){setTimeout(()=>win.print(),600);}
+  else{
+    const msg=`*${tpl.shopName||SHOP_NAME} — Receipt*\nDate: ${bill.date}\nCustomer: ${bill.customerName}\n\n${items.map(i=>`${i.name} ×${i.qty} = ₨${i.price*i.qty}`).join('\n')}\n\n*Total Payable: ₨${bill.payableAmount}*\nPaid: ₨${bill.amountPaid}\nStatus: ${bill.paymentStatus}\n\n${tpl.footerNote||'Thank you!'}`;
+    const phone=CUR.billCust?.phone||'';
+    let num=phone.replace(/[^0-9]/g,'');if(num.startsWith('0'))num='92'+num.slice(1);
+    setTimeout(()=>{win.print();if(num)window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');},600);
+  }
+}
+
+/* ══════════════════════════════════════
+   INVENTORY
+══════════════════════════════════════ */
+function pgInventory(){
+  let pr=DB.products;if(CUR.invFilter!=='all')pr=pr.filter(p=>p.shop===CUR.invFilter);
+  const cut=new Date();cut.setDate(cut.getDate()+60);
+  return `
+  <div class="sec-head">
+    <div class="pills">
+      <button class="pill ${CUR.invFilter==='all'?'on':''}" onclick="setIF('all')">All</button>
+      <button class="pill ${CUR.invFilter==='Bakery'?'on':''}" onclick="setIF('Bakery')">Bakery</button>
+      <button class="pill ${CUR.invFilter==='Mobile'?'on':''}" onclick="setIF('Mobile')">Mobile</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" onclick="showImportModal()">⬆ Import CSV</button>
+      <button class="btn btn-primary" onclick="showProdModal()">+ Add Product</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Product</th><th>Barcode</th><th>Shop</th><th>Stock</th><th>Buy ₨</th><th>Sell ₨</th><th>Expiry</th><th>Actions</th></tr></thead>
+      <tbody>${pr.length?pr.map(p=>{
+        const max=Math.max(p.lowStockAlert*3,20,p.qty);const pct=Math.min(100,Math.round(p.qty/max*100));
+        const isLow=p.lowStockAlert>0&&p.qty<=p.lowStockAlert;
+        const cls=isLow?'sf-low':pct<40?'sf-warn':'sf-ok';
+        const ed=p.expiryDate?new Date(p.expiryDate):null;
+        const expired=ed&&ed<new Date();const expiring=ed&&!expired&&ed<=cut;
+        const expStr=!ed?'—':expired?'<span style="color:var(--err);font-weight:600">Expired</span>':expiring?`<span style="color:var(--warn);font-weight:600">${p.expiryDate}</span>`:p.expiryDate;
+        return `<tr>
+          <td><strong>${esc(p.name)}</strong></td>
+          <td class="mono">${p.barcode||'—'}</td>
+          <td>${shBadge(p.shop)}</td>
+          <td><div style="font-weight:600;color:${isLow?'var(--err)':'inherit'}">${p.qty}${isLow?' ⚠':''}</div>
+            <div class="stock-bar"><div class="stock-fill ${cls}" style="width:${pct}%"></div></div></td>
+          <td>${fmt(p.purchasePrice)}</td><td>${fmt(p.sellingPrice)}</td>
+          <td class="sm">${expStr}</td>
+          <td><div class="acts">
+            <button class="btn btn-sm" onclick="showProdModal('${p.id}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="delProd('${p.id}')">Del</button>
+          </div></td>
+        </tr>`;
+      }).join(''):
+      `<tr><td colspan="8">${emptyEl('📦','No products')}</td></tr>`}
+      </tbody>
+    </table></div>
+  </div>`;
+}
+function setIF(f){CUR.invFilter=f;renderPage();}
+function showProdModal(id){
+  const p=id?DB.products.find(x=>x.id===id):null;
+  showModal(`
+    <div class="modal-hd"><div class="modal-title">${p?'Edit Product':'Add Product'}</div><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="g2">
+      <div class="f-group"><label class="f-label">Product Name *</label><input class="f-ctrl" id="pN" value="${esc(p?.name||'')}"/></div>
+      <div class="f-group"><label class="f-label">Barcode</label>
+        <div style="display:flex;gap:8px">
+          <input class="f-ctrl" id="pB" value="${esc(p?.barcode||'')}" placeholder="Scan or type"/>
+          <button class="scan-btn" onclick="openScanner('inventory_barcode')" title="Scan with camera">📷</button>
+        </div>
+      </div>
+    </div>
+    <div class="g3">
+      <div class="f-group"><label class="f-label">Shop *</label><select class="f-ctrl" id="pSh"><option value="Bakery" ${p?.shop==='Bakery'?'selected':''}>Bakery</option><option value="Mobile" ${p?.shop==='Mobile'?'selected':''}>Mobile</option></select></div>
+      <div class="f-group"><label class="f-label">Quantity *</label><input type="number" class="f-ctrl" id="pQ" value="${p?.qty||0}" min="0"/></div>
+      <div class="f-group"><label class="f-label">Low Stock Alert</label><input type="number" class="f-ctrl" id="pA" value="${p?.lowStockAlert||''}" placeholder="e.g. 5"/></div>
+    </div>
+    <div class="g2">
+      <div class="f-group"><label class="f-label">Purchase Price ₨ *</label><input type="number" class="f-ctrl" id="pBu" value="${p?.purchasePrice||''}"/></div>
+      <div class="f-group"><label class="f-label">Selling Price ₨ *</label><input type="number" class="f-ctrl" id="pSl" value="${p?.sellingPrice||''}"/></div>
+    </div>
+    <div class="f-group"><label class="f-label">Expiry Date <span class="muted">(optional)</span></label><input type="date" class="f-ctrl" id="pEx" value="${p?.expiryDate||''}"/></div>
+    <button class="btn btn-primary btn-block" onclick="saveProd('${id||''}')">Save Product</button>
+  `);
+}
+async function saveProd(id){
+  const row={name:val('pN'),barcode:val('pB'),shop:val('pSh'),qty:+val('pQ')||0,purchasePrice:+val('pBu')||0,sellingPrice:+val('pSl')||0,lowStockAlert:+val('pA')||0,expiryDate:val('pEx')};
+  if(!row.name){toast('Name required','warn');return;}
+  try{
+    if(id){await apiPost({action:'updProduct',id,row});const i=DB.products.findIndex(p=>p.id===id);if(i>=0)DB.products[i]=normP({...DB.products[i],...row});toast('Updated','ok');}
+    else{row.id=uid();await apiPost({action:'addProduct',row});DB.products.push(normP(row));toast('Product added','ok');}
+    closeModal();refreshTopbar();renderPage();
+  }catch(e){toast(e.message,'err');}
+}
+async function delProd(id){
+  if(!confirm('Delete this product?'))return;
+  try{await apiPost({action:'delProduct',id});DB.products=DB.products.filter(p=>p.id!==id);toast('Deleted','ok');renderPage();}catch(e){toast(e.message,'err');}
+}
+function showImportModal(){
+  showModal(`
+    <div class="modal-hd"><div class="modal-title">Import Products from CSV</div><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="alert alert-info">Upload a CSV file with columns: <code>name, barcode, shop, qty, purchasePrice, sellingPrice, lowStockAlert, expiryDate</code>. The first row must be headers.</div>
+    <div class="f-group"><label class="f-label">Select CSV File</label><input type="file" class="f-ctrl" id="csvFile" accept=".csv"/></div>
+    <button class="btn btn-primary btn-block" onclick="importCSV()">Import Products</button>
+    <div style="margin-top:14px">
+      <div class="card-title">CSV Template</div>
+      <textarea class="f-ctrl" rows="4" readonly style="font-family:'DM Mono',monospace;font-size:11px;background:var(--bg)">name,barcode,shop,qty,purchasePrice,sellingPrice,lowStockAlert,expiryDate
+Mineral Water,8901234567,Bakery,50,40,60,5,
+USB Cable,7654321098,Mobile,20,180,350,5,</textarea>
+    </div>
+  `);
+}
+function importCSV(){
+  const file=g('csvFile')?.files?.[0];if(!file){toast('Select a file','warn');return;}
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    const lines=e.target.result.split('\n').filter(l=>l.trim());
+    if(lines.length<2){toast('CSV has no data','warn');return;}
+    const headers=lines[0].split(',').map(h=>h.trim());
+    let added=0;
+    for(let i=1;i<lines.length;i++){
+      const vals=lines[i].split(',').map(v=>v.trim());
+      const row={};headers.forEach((h,j)=>row[h]=vals[j]||'');
+      row.id=uid();row.qty=+row.qty||0;row.purchasePrice=+row.purchasePrice||0;row.sellingPrice=+row.sellingPrice||0;row.lowStockAlert=+row.lowStockAlert||0;
+      if(!row.name)continue;
+      await apiPost({action:'addProduct',row});DB.products.push(normP(row));added++;
+    }
+    toast(`${added} products imported`,'ok');closeModal();refreshTopbar();renderPage();
+  };
+  reader.readAsText(file);
+}
+
+/* ══════════════════════════════════════
+   CUSTOMERS
+══════════════════════════════════════ */
+function pgCustomers(profileId){
+  if(profileId){
+    const c=DB.customers.find(x=>x.id===profileId);if(!c){CUR.custProfileId=null;return pgCustomers();}
+    const pending=DB.bills.filter(b=>b.customerId===profileId&&b.paymentStatus!=='paid');
+    const allBills=DB.bills.filter(b=>b.customerId===profileId);
+    const custPayHist=DB.customerPayments.filter(cp=>cp.customerId===profileId);
+    return `
+      <div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="CUR.custProfileId=null;renderPage()">← Back</button>
+        <button class="btn btn-sm btn-wa" onclick="custWA('${c.id}')">📱 WhatsApp Customer</button>
+        <button class="btn btn-sm btn-primary" onclick="showCustPayModal('${c.id}')">💰 Make Payment</button>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <div class="av">${c.name.charAt(0).toUpperCase()}</div>
+          <div style="flex:1"><div style="font-size:18px;font-weight:600">${esc(c.name)}</div><div class="muted">${c.phone||'—'}</div></div>
+          <div style="text-align:right"><div class="sm muted">Total Billed</div><div style="font-size:22px;font-weight:600">${fmt(+c.totalBilled||0)}</div></div>
+          <div style="text-align:right;margin-left:8px"><div class="sm muted">Outstanding</div><div style="font-size:22px;font-weight:600;color:${+c.outstanding>0?'var(--err)':'var(--ok)'}">${fmt(+c.outstanding||0)}</div></div>
+          ${+c.advanceBalance>0?`<div style="text-align:right;margin-left:8px"><div class="sm muted">Advance Credit</div><div style="font-size:22px;font-weight:600;color:var(--p)">${fmt(+c.advanceBalance||0)}</div></div>`:''}
+        </div>
+      </div>
+      <div class="cols-2" style="align-items:start">
+        <div class="card">
+          <div class="card-title">Unpaid / Partial Bills</div>
+          ${pending.length?`<div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Date</th><th>Items</th><th>Total</th><th>Paid</th><th>Due</th><th>Status</th><th></th></tr></thead>
+            <tbody>${pending.map(b=>{
+              const items=Array.isArray(b.items)?b.items:[];
+              const due=b.payableAmount-(+b.amountPaid||0);
+              return `<tr>
+                <td class="sm">${b.date}</td>
+                <td class="sm">${items.map(i=>`${i.name} ×${i.qty}`).join(', ')||'—'}</td>
+                <td>${fmt(b.payableAmount)}</td><td>${fmt(+b.amountPaid||0)}</td>
+                <td style="color:var(--err);font-weight:600">${fmt(due)}</td>
+                <td>${sBadge(b.paymentStatus)}</td>
+                <td><button class="btn btn-xs btn-primary" onclick="quickCustPay('${b.id}','${c.id}',${due})">Collect</button></td>
+              </tr>`;
+            }).join('')}</tbody>
+          </table></div>`:emptyEl('✅','No outstanding bills','16px')}
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-title">All Bills (${allBills.length})</div>
+            ${allBills.length?`<div class="tbl-wrap"><table class="tbl">
+              <thead><tr><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+              <tbody>${[...allBills].reverse().map(b=>`<tr>
+                <td class="sm">${b.date}</td><td>${fmt(b.payableAmount)}</td>
+                <td>${sBadge(b.paymentStatus)}</td>
+                <td><button class="btn btn-xs" onclick="printBill(DB.bills.find(x=>x.id==='${b.id}'))">Print</button></td>
+              </tr>`).join('')}</tbody>
+            </table></div>`:emptyEl('📄','No bills','16px')}
+          </div>
+          <div class="card">
+            <div class="card-title">Payment History</div>
+            ${custPayHist.length?`<div class="tbl-wrap"><table class="tbl">
+              <thead><tr><th>Date</th><th>Amount</th><th>Note</th></tr></thead>
+              <tbody>${[...custPayHist].reverse().map(cp=>`<tr>
+                <td class="sm">${cp.date}</td><td style="font-weight:600;color:var(--ok)">${fmt(+cp.amount||0)}</td>
+                <td class="sm muted">${esc(cp.note||'—')}</td>
+              </tr>`).join('')}</tbody>
+            </table></div>`:emptyEl('💰','No payments recorded','16px')}
+          </div>
+        </div>
+      </div>`;
+  }
+  return `
+  <div class="sec-head">
+    <input class="f-ctrl" placeholder="Search customers…" style="max-width:260px" oninput="fltCust(this.value)"/>
+    <button class="btn btn-primary" onclick="showCustModal()">+ Add Customer</button>
+  </div>
+  <div class="card">
+    <div class="tbl-wrap"><table class="tbl" id="custTbl">
+      <thead><tr><th>Name</th><th>Phone</th><th>Total Billed</th><th>Outstanding</th><th>Advance</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>${DB.customers.length?DB.customers.map(c=>{
+        const out=+c.outstanding||0;const adv=+c.advanceBalance||0;
+        return `<tr>
+          <td><strong>${esc(c.name)}</strong></td>
+          <td>${c.phone||'—'}</td>
+          <td>${fmt(+c.totalBilled||0)}</td>
+          <td style="font-weight:600;color:${out>0?'var(--err)':'var(--ok)'}">${fmt(out)}</td>
+          <td>${adv>0?`<span class="adv-badge">+${fmt(adv)}</span>`:'<span class="muted sm">—</span>'}</td>
+          <td>${out>0?'<span class="badge b-red">Has dues</span>':adv>0?'<span class="badge b-purple">Has credit</span>':'<span class="badge b-green">Clear</span>'}</td>
+          <td><div class="acts">
+            <button class="btn btn-sm" onclick="CUR.custProfileId='${c.id}';renderPage()">Profile</button>
+            <button class="btn btn-sm btn-primary" onclick="showCustPayModal('${c.id}')">💰 Pay</button>
+            <button class="btn btn-sm btn-wa" onclick="custWA('${c.id}')">WA</button>
+            <button class="btn btn-sm" onclick="showCustModal('${c.id}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="delCust('${c.id}')">Del</button>
+          </div></td>
+        </tr>`;
+      }).join(''):
+      `<tr><td colspan="7">${emptyEl('👥','No customers yet')}</td></tr>`}
+      </tbody>
+    </table></div>
+  </div>`;
+}
+function fltCust(v){document.querySelectorAll('#custTbl tbody tr').forEach(r=>r.style.display=r.textContent.toLowerCase().includes(v.toLowerCase())?'':'none');}
+function showCustModal(id){
+  const c=id?DB.customers.find(x=>x.id===id):null;
+  showModal(`
+    <div class="modal-hd"><div class="modal-title">${c?'Edit Customer':'Add Customer'}</div><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="f-group"><label class="f-label">Full Name *</label><input class="f-ctrl" id="cN" value="${esc(c?.name||'')}"/></div>
+    <div class="f-group"><label class="f-label">Phone / WhatsApp</label><input class="f-ctrl" id="cP" value="${esc(c?.phone||'')}"/></div>
+    <button class="btn btn-primary btn-block" onclick="saveCust('${id||''}')">Save Customer</button>
+  `);
+}
+async function saveCust(id){
+  const row={name:val('cN'),phone:val('cP')};if(!row.name){toast('Name required','warn');return;}
+  try{
+    if(id){await apiPost({action:'updCustomer',id,row});const i=DB.customers.findIndex(c=>c.id===id);if(i>=0)DB.customers[i]={...DB.customers[i],...row};toast('Updated','ok');}
+    else{row.id=uid();row.totalBilled=0;row.outstanding=0;await apiPost({action:'addCustomer',row});DB.customers.push(row);toast('Customer added','ok');}
+    closeModal();renderPage();
+  }catch(e){toast(e.message,'err');}
+}
+async function delCust(id){
+  if(!confirm('Delete this customer?'))return;
+  try{await apiPost({action:'delCustomer',id});DB.customers=DB.customers.filter(c=>c.id!==id);toast('Deleted','ok');renderPage();}catch(e){toast(e.message,'err');}
+}
+function showCustPayModal(custId){
+  _cPayType='regular';
+  const c=DB.customers.find(x=>x.id===custId);if(!c)return;
+  const pending=DB.bills.filter(b=>b.customerId===custId&&b.paymentStatus!=='paid');
+  const totalDue=+c.outstanding||0;
+  const adv=+c.advanceBalance||0;
+  showModal(`
+    <div class="modal-hd"><div class="modal-title">Collect Payment — ${esc(c.name)}</div><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="g2" style="margin-bottom:16px">
+      <div class="metric"><div class="metric-lbl">Outstanding Due</div><div class="metric-val" style="color:var(--err)">${fmt(totalDue)}</div></div>
+      <div class="metric"><div class="metric-lbl">Advance Credit</div><div class="metric-val" style="color:var(--p)">${fmt(adv)}</div><div class="metric-sub">On customer's account</div></div>
+    </div>
+    <div class="g2" style="margin-bottom:14px">
+      <div class="pay-type-btn sel" id="ctRegular" onclick="setCPayType('regular')">
+        <div class="pt-ic">💰</div><div class="pt-tx">Regular Payment</div><div class="pt-sub">Against pending bills</div>
+      </div>
+      <div class="pay-type-btn" id="ctAdvance" onclick="setCPayType('advance')">
+        <div class="pt-ic">⏩</div><div class="pt-tx">Advance Payment</div><div class="pt-sub">Credit for future bills</div>
+      </div>
+    </div>
+    <div id="cPayTypeNote" class="alert alert-info" style="margin-bottom:12px">Payment will be applied to oldest pending bills first.</div>
+    ${adv>0?`<div class="alert alert-ok" style="margin-bottom:12px">✅ Customer has <strong>${fmt(adv)}</strong> advance credit on account.</div>`:''}
+    ${pending.length?`<div style="margin-bottom:14px">
+      <div class="card-title">Pending Bills</div>
+      ${pending.map(b=>{const due=b.payableAmount-(+b.amountPaid||0);return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd)">
+        <div class="sm bold">${b.date} — ${(Array.isArray(b.items)?b.items:[]).map(i=>i.name).join(', ')}</div>
+        <div class="sm bold" style="color:var(--err);white-space:nowrap">Due: ${fmt(due)}</div>
+      </div>`;}).join('')}
+    </div>`:'<div class="alert alert-ok">No pending bills.</div>'}
+    <div class="f-group"><label class="f-label">Amount Received (₨)</label>
+      <div style="display:flex;gap:8px">
+        <input type="number" class="f-ctrl" id="cpAmt" placeholder="0"/>
+        ${totalDue>0?`<button class="btn" onclick="g('cpAmt').value=${Math.round(totalDue)}">Full Due</button>`:''}
+      </div>
+    </div>
+    <div class="f-group"><label class="f-label">Payment Method</label>
+      <select class="f-ctrl" id="cpMethod"><option>Cash</option><option>Online</option></select>
+    </div>
+    <div class="f-group"><label class="f-label">Note (optional)</label><input class="f-ctrl" id="cpNote" placeholder="e.g. Cash received at shop"/></div>
+    <button class="btn btn-ok btn-block" onclick="recordCustPayment('${custId}')">✓ Record Payment</button>
+  `);
+}
+async function recordCustPayment(custId){
+  const c=DB.customers.find(x=>x.id===custId);if(!c)return;
+  const amt=parseFloat(val('cpAmt'));if(!amt||amt<=0){toast('Enter amount','warn');return;}
+  const isAdvance=(typeof _cPayType!=='undefined'&&_cPayType==='advance');
+  const payRow={id:uid(),date:today(),customerId:custId,customerName:c.name,amount:amt,method:val('cpMethod'),note:val('cpNote'),paymentType:isAdvance?'advance':'regular'};
+  try{
+    await apiPost({action:'addCustomerPayment',row:payRow});DB.customerPayments.push(payRow);
+    if(isAdvance){
+      const newAdv=(+c.advanceBalance||0)+amt;
+      const uc={...c,advanceBalance:newAdv};
+      await apiPost({action:'updCustomer',id:custId,row:uc});c.advanceBalance=newAdv;
+      toast(`${fmt(amt)} advance recorded for ${c.name}`,'ok');
+    } else {
+      const totalDue=+c.outstanding||0;
+      const actual=Math.min(amt,totalDue);
+      let remaining=actual;
+      const pending=DB.bills.filter(b=>b.customerId===custId&&b.paymentStatus!=='paid').sort((a,b)=>a.date>b.date?1:-1);
+      for(const bill of pending){
+        if(remaining<=0)break;
+        const due=bill.payableAmount-(+bill.amountPaid||0);
+        const applying=Math.min(remaining,due);
+        bill.amountPaid=(+bill.amountPaid||0)+applying;
+        bill.paymentStatus=bill.amountPaid>=bill.payableAmount?'paid':'partial';
+        remaining-=applying;
+        await apiPost({action:'updBill',id:bill.id,row:{...bill,items:JSON.stringify(Array.isArray(bill.items)?bill.items:[])}});
+      }
+      const nOut=Math.max(0,totalDue-actual);
+      const uc={...c,outstanding:nOut};
+      await apiPost({action:'updCustomer',id:custId,row:uc});c.outstanding=nOut;
+      toast(`${fmt(actual)} received from ${c.name}`,'ok');
+    }
+    closeModal();
+    if(CUR.custProfileId===custId)g('pageArea').innerHTML=pgCustomers(custId);else renderPage();
+  }catch(e){toast(e.message,'err');}
+}
+async function quickCustPay(bId,cId,due){
+  const amt=parseFloat(prompt(`Collect amount (Due: ₨${Math.round(due)}):`));
+  if(!amt||amt<=0)return;
+  const actual=Math.min(amt,due);const c=DB.customers.find(x=>x.id===cId);const bill=DB.bills.find(x=>x.id===bId);
+  if(!c||!bill)return;
+  const payRow={id:uid(),date:today(),customerId:cId,customerName:c.name,amount:actual,method:'Cash',note:'Quick collection'};
+  try{
+    await apiPost({action:'addCustomerPayment',row:payRow});DB.customerPayments.push(payRow);
+    bill.amountPaid=(+bill.amountPaid||0)+actual;bill.paymentStatus=bill.amountPaid>=bill.payableAmount?'paid':'partial';
+    await apiPost({action:'updBill',id:bId,row:{...bill,items:JSON.stringify(Array.isArray(bill.items)?bill.items:[])}});
+    const nOut=Math.max(0,(+c.outstanding||0)-actual);const uc={...c,outstanding:nOut};
+    await apiPost({action:'updCustomer',id:cId,row:uc});c.outstanding=nOut;
+    toast(`${fmt(actual)} collected`,'ok');g('pageArea').innerHTML=pgCustomers(cId);
+  }catch(e){toast(e.message,'err');}
+}
+function custWA(custId){
+  const c=DB.customers.find(x=>x.id===custId);if(!c)return;
+  const pending=DB.bills.filter(b=>b.customerId===custId&&b.paymentStatus!=='paid');
+  const msg=`Dear ${c.name},\n\nThis is a reminder from ${SHOP_NAME}.\n\nYour outstanding balance: *₨${Math.round(+c.outstanding||0)}*\n\nPending bills:\n${pending.map(b=>{const due=b.payableAmount-(+b.amountPaid||0);return `- ${b.date}: ₨${Math.round(due)} due`;}).join('\n')||'None'}\n\nPlease visit us to settle your account.\n\nThank you for your business! 🙏`;
+  let num=(c.phone||'').replace(/[^0-9]/g,'');if(num.startsWith('0'))num='92'+num.slice(1);
+  if(num)window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');
+  else toast('No phone number saved for this customer','warn');
+}
+
+/* ══════════════════════════════════════
+   RETURNS
+══════════════════════════════════════ */
+function pgReturns(){
+  const selCust=CUR.retCustId?DB.customers.find(c=>c.id===CUR.retCustId):null;
+  const custBills=selCust?DB.bills.filter(b=>b.customerId===selCust.id&&b.paymentStatus!=='paid'):[];
+  return `
+  <div class="sec-head">
+    <div class="pills">
+      <button class="pill ${CUR.retMode==='return'?'on':''}" onclick="setRM('return')">Return Only</button>
+      <button class="pill ${CUR.retMode==='exchange'?'on':''}" onclick="setRM('exchange')">Return &amp; Replace</button>
+    </div>
+  </div>
+  <div class="cols-2" style="align-items:start">
+    <div class="card">
+      <div class="card-title">Return Details</div>
+
+      <div class="f-group">
+        <label class="f-label">Customer</label>
+        <select class="f-ctrl" id="rCustSel" onchange="setRetCust(this.value)">
+          <option value="">— Walk-in (no account) —</option>
+          ${DB.customers.map(c=>`<option value="${c.id}" ${CUR.retCustId===c.id?'selected':''}>${esc(c.name)} — ${c.phone||'—'}</option>`).join('')}
+        </select>
+      </div>
+
+      ${selCust?`
+      <div class="f-group">
+        <label class="f-label">Link to Unpaid Bill <span class="muted">(optional)</span></label>
+        <select class="f-ctrl" id="rBillSel">
+          <option value="">— No bill link —</option>
+          ${custBills.map(b=>{
+            const items=Array.isArray(b.items)?b.items:[];
+            const due=b.payableAmount-(+b.amountPaid||0);
+            return `<option value="${b.id}">${b.date} — ${items.map(i=>i.name).join(', ')||'Bill'} — Due: ${fmt(due)} [${b.paymentStatus}]</option>`;
+          }).join('')}
+        </select>
+      </div>
+      <div class="f-group">
+        <label class="f-label">Update Bill Status to</label>
+        <div class="pills">
+          <button class="pill ${CUR.retBillStatus==='paid'?'on':''}" onclick="setRetBillStatus('paid')">Paid</button>
+          <button class="pill ${CUR.retBillStatus==='partial'?'on':''}" onclick="setRetBillStatus('partial')">Partial</button>
+          <button class="pill ${CUR.retBillStatus==='unpaid'?'on':''}" onclick="setRetBillStatus('unpaid')">Unpaid</button>
+          <button class="pill ${CUR.retBillStatus===''?'on':''}" onclick="setRetBillStatus('')">No Change</button>
+        </div>
+      </div>
+      ${CUR.retBillStatus==='partial'?'<div class="f-group"><label class="f-label">Amount Paid on Bill (₨)</label><input type="number" class="f-ctrl" id="rBillPaid" placeholder="0"/></div>':''}
+      ${selCust.outstanding>0?`<div class="alert alert-warn" style="margin-bottom:8px">⚠️ ${esc(selCust.name)} has <strong>${fmt(selCust.outstanding)}</strong> outstanding balance.</div>`:''}
+      `:''}
+
+      <div class="f-group">
+        <label class="f-label">Product Being Returned *</label>
+        <div style="display:flex;gap:8px">
+          <div class="srch-wrap" style="flex:1"><input class="f-ctrl" id="rPI" placeholder="Search product…" oninput="rSrch('rPI','rPD')" autocomplete="off"/><div class="srch-drop hidden" id="rPD"></div></div>
+          <button class="scan-btn" onclick="openScanner('returns')" title="Scan barcode">📷</button>
+        </div>
+      </div>
+      <div class="f-group"><label class="f-label">Quantity</label><input type="number" class="f-ctrl" id="rQ" value="1" min="1"/></div>
+      <div class="f-group"><label class="f-label">Reason</label>
+        <select class="f-ctrl" id="rR"><option>Defective item</option><option>Wrong item</option><option>Customer changed mind</option><option>Expired product</option><option>Other</option></select>
+      </div>
+      <div class="alert alert-info" style="margin-bottom:0">Stock will be <strong>restored automatically</strong> on confirm.</div>
+    </div>
+
+    ${CUR.retMode==='exchange'?`
+    <div class="card">
+      <div class="card-title">Replacement Product</div>
+      <div class="f-group"><label class="f-label">New Product *</label>
+        <div class="srch-wrap"><input class="f-ctrl" id="xPI" placeholder="Search replacement…" oninput="rSrch('xPI','xPD')" autocomplete="off"/><div class="srch-drop hidden" id="xPD"></div></div>
+      </div>
+      <div class="f-group"><label class="f-label">Quantity</label><input type="number" class="f-ctrl" id="xQ" value="1" min="1" onchange="calcDiff()"/></div>
+      <div class="divider"></div>
+      <div style="background:var(--bg);border-radius:var(--rs);padding:12px">
+        <div class="bill-row sm"><span>Return value</span><span id="rv">—</span></div>
+        <div class="bill-row sm"><span>New product price</span><span id="xv">—</span></div>
+        <div class="bill-row bold" style="border-top:1px solid var(--bd);margin-top:6px;padding-top:8px"><span>Difference</span><span id="dv">—</span></div>
+      </div>
+      <button class="btn btn-ok btn-block" style="margin-top:14px" onclick="doExchange()">&#10003; Confirm Exchange</button>
+    </div>`:`
+    <div class="card">
+      <button class="btn btn-ok btn-block" style="margin-bottom:16px" onclick="doReturn()">&#10003; Confirm Return</button>
+      <div class="card-title">Recent Returns</div>
+      ${DB.returns.length?`<div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Date</th><th>Customer</th><th>Product</th><th>Qty</th><th>Type</th></tr></thead>
+        <tbody>${[...DB.returns].reverse().slice(0,8).map(r=>`<tr>
+          <td class="sm">${r.date}</td>
+          <td class="sm">${esc(r.customerName||'Walk-in')}</td>
+          <td>${esc(r.returnedProduct)}</td><td>${r.returnedQty}</td>
+          <td><span class="badge b-gray">${r.returnType}</span></td>
+        </tr>`).join('')}</tbody>
+      </table></div>`:emptyEl('&#8617;&#65039;','No returns yet','16px')}
+    </div>`}
+  </div>`;
+}
+function setRM(m){CUR.retMode=m;renderPage();}
+function setRetCust(id){CUR.retCustId=id||null;CUR.retBillStatus='';renderPage();}
+function setRetBillStatus(s){CUR.retBillStatus=s;renderPage();}
+function rSrch(inId,dropId){
+  const v=val(inId);const dr=g(dropId);if(!v){dr.classList.add('hidden');return;}
+  const hits=DB.products.filter(p=>p.name.toLowerCase().includes(v.toLowerCase())).slice(0,6);
+  if(!hits.length){dr.classList.add('hidden');return;}
+  dr.classList.remove('hidden');
+  dr.innerHTML=hits.map(p=>`<div class="sr-item" onclick="g('${inId}').value='${esc(p.name)}';g('${dropId}').classList.add('hidden');calcDiff()"><div class="sr-name">${esc(p.name)}</div><div class="sr-sub">${fmt(p.sellingPrice)} | Stock: ${p.qty}</div></div>`).join('');
+}
+function calcDiff(){
+  const rn=val('rPI'),rq=parseInt(val('rQ'))||1,xn=val('xPI')||'',xq=parseInt(val('xQ'))||1;
+  const rp=DB.products.find(p=>p.name.toLowerCase()===rn.toLowerCase());
+  const xp=xn?DB.products.find(p=>p.name.toLowerCase()===xn.toLowerCase()):null;
+  if(g('rv'))g('rv').textContent=rp?fmt(rp.sellingPrice*rq):'—';
+  if(g('xv'))g('xv').textContent=xp?fmt(xp.sellingPrice*xq):'—';
+  if(g('dv')&&rp&&xp){const d=(rp.sellingPrice*rq)-(xp.sellingPrice*xq);g('dv').textContent=fmt(Math.abs(d))+' '+(d>=0?'refund':'charge');}
+}
+async function applyReturnBillUpdate(){
+  const custId=CUR.retCustId;
+  const billId=g('rBillSel')?g('rBillSel').value:'';
+  const newStatus=CUR.retBillStatus;
+  if(!custId||!newStatus||!billId)return;
+  const cust=DB.customers.find(c=>c.id===custId);
+  const bill=DB.bills.find(b=>b.id===billId);
+  if(!cust||!bill)return;
+  let newPaid=+bill.amountPaid||0;
+  let finalStatus=newStatus;
+  if(newStatus==='paid'){newPaid=bill.payableAmount;finalStatus='paid';}
+  else if(newStatus==='partial'){const pa=parseFloat(g('rBillPaid')?g('rBillPaid').value:'0')||0;newPaid=Math.min(pa,bill.payableAmount);finalStatus=newPaid>=bill.payableAmount?'paid':'partial';}
+  else if(newStatus==='unpaid'){newPaid=0;finalStatus='unpaid';}
+  const oldDue=bill.payableAmount-(+bill.amountPaid||0);
+  const newDue=bill.payableAmount-newPaid;
+  const dueDiff=oldDue-newDue;
+  bill.amountPaid=newPaid;bill.paymentStatus=finalStatus;
+  await apiPost({action:'updBill',id:billId,row:{...bill,items:JSON.stringify(Array.isArray(bill.items)?bill.items:[])}});
+  const newOut=Math.max(0,(+cust.outstanding||0)-dueDiff);
+  const uc={...cust,outstanding:newOut};
+  await apiPost({action:'updCustomer',id:custId,row:uc});cust.outstanding=newOut;
+  toast('Bill updated to '+finalStatus,finalStatus==='paid'?'ok':'info');
+}
+async function doReturn(){
+  const rn=val('rPI');if(!rn){toast('Enter product name','warn');return;}
+  const qty=parseInt(val('rQ'))||1;
+  const custId=CUR.retCustId||'';
+  const cust=custId?DB.customers.find(c=>c.id===custId):null;
+  const row={id:uid(),date:today(),customerName:cust?cust.name:'Walk-in',customerId:custId,returnedProduct:rn,returnedQty:qty,reason:val('rR'),returnType:'return',newProduct:'',newQty:0};
+  try{
+    await apiPost({action:'addReturn',row});DB.returns.push(row);
+    const pr=DB.products.find(p=>p.name.toLowerCase()===rn.toLowerCase());
+    if(pr){await apiPost({action:'updProduct',id:pr.id,row:{...pr,qty:pr.qty+qty}});pr.qty+=qty;}
+    await applyReturnBillUpdate();
+    CUR.retCustId=null;CUR.retBillStatus='';
+    toast('Return processed, stock restored','ok');renderPage();
+  }catch(e){toast(e.message,'err');}
+}
+async function doExchange(){
+  const rn=val('rPI'),xn=val('xPI');if(!rn||!xn){toast('Enter both products','warn');return;}
+  const rq=parseInt(val('rQ'))||1,xq=parseInt(val('xQ'))||1;
+  const rp=DB.products.find(p=>p.name.toLowerCase()===rn.toLowerCase());
+  const xp=DB.products.find(p=>p.name.toLowerCase()===xn.toLowerCase());
+  const diff=(rp?rp.sellingPrice*rq:0)-(xp?xp.sellingPrice*xq:0);
+  const custId=CUR.retCustId||'';
+  const cust=custId?DB.customers.find(c=>c.id===custId):null;
+  const row={id:uid(),date:today(),customerName:cust?cust.name:'Walk-in',customerId:custId,returnedProduct:rn,returnedQty:rq,reason:val('rR'),returnType:'exchange',newProduct:xn,newQty:xq,priceDiff:diff};
+  try{
+    await apiPost({action:'addReturn',row});DB.returns.push(row);
+    if(rp){await apiPost({action:'updProduct',id:rp.id,row:{...rp,qty:rp.qty+rq}});rp.qty+=rq;}
+    if(xp){const nq=Math.max(0,xp.qty-xq);await apiPost({action:'updProduct',id:xp.id,row:{...xp,qty:nq}});xp.qty=nq;}
+    await applyReturnBillUpdate();
+    CUR.retCustId=null;CUR.retBillStatus='';
+    toast('Exchange done. '+(diff>=0?'Refund':'Charge')+': '+fmt(Math.abs(diff)),'ok');renderPage();
+  }catch(e){toast(e.message,'err');}
+}
+
+/* ══════════════════════════════════════
+   VENDORS
+══════════════════════════════════════ */
+function pgVendors(){
+  const sv=CUR.selVendor?DB.vendors.find(v=>v.id===CUR.selVendor):null;
+  const vOrders=sv?DB.orders.filter(o=>o.vendorId===sv.id):[];
+  const open=vOrders.filter(o=>o.status!=='paid');
+  const hist=vOrders.filter(o=>o.status==='paid');
+  const low=DB.products.filter(p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert);
+  const vPayHist=sv?DB.vendorPayments.filter(vp=>vp.vendorId===sv.id):[];
+  return `
+  <div class="${sv?'cols-2':''}">
+    <div>
+      <div class="sec-head"><div class="sec-title">Vendors</div>
+        <button class="btn btn-primary" onclick="showVendorModal()">+ Add Vendor</button>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Vendor</th><th>Description</th><th>Phone</th><th>Balance Due</th><th>Advance Paid</th><th>Actions</th></tr></thead>
+          <tbody>${DB.vendors.length?DB.vendors.map(v=>`<tr style="${CUR.selVendor===v.id?'background:#f5f3ff':''}">
+            <td><strong>${esc(v.name)}</strong></td>
+            <td class="sm muted" style="max-width:160px">${esc(v.description||'—')}</td>
+            <td class="sm">${v.phone||'—'}</td>
+            <td style="font-weight:600;color:${+v.balance>0?'var(--err)':'var(--ok)'}">${fmt(+v.balance||0)}</td>
+            <td>${+v.advanceBalance>0?`<span class="adv-badge">+${fmt(+v.advanceBalance)}</span>`:'<span class="muted sm">—</span>'}</td>
+            <td><div class="acts">
+              <button class="btn btn-sm btn-primary" onclick="showMakeVendorPayModal('${v.id}')">💰 Pay</button>
+              <button class="btn btn-sm" onclick="selV('${v.id}')">Orders</button>
+              <button class="btn btn-sm btn-wa" onclick="showVendorWAModal('${v.id}')">WA ▾</button>
+              <button class="btn btn-sm" onclick="showVendorModal('${v.id}')">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="delVendor('${v.id}')">Del</button>
+            </div></td>
+          </tr>`).join(''):`<tr><td colspan="6">${emptyEl('🏪','No vendors added')}</td></tr>`}
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+    ${sv?`<div>
+      <div class="sec-head">
+        <div class="sec-title" style="border-left:4px solid var(--p);padding-left:10px">${esc(sv.name)}</div>
+        <button class="btn btn-sm" onclick="CUR.selVendor=null;renderPage()">✕</button>
+      </div>
+      ${sv.description?`<div class="alert alert-info" style="margin-bottom:12px">ℹ️ ${esc(sv.description)}</div>`:''}
+      ${low.length?`<div class="alert alert-warn">💡 Low stock: ${low.map(p=>p.name).join(', ')} — consider placing an order.</div>`:''}
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Place New Order</div>
+        <div class="f-group"><label class="f-label">Order Description *</label><input class="f-ctrl" id="oItems" placeholder="e.g. Mineral Water — 200 bottles"/></div>
+        <div class="g2">
+          <div class="f-group"><label class="f-label">Estimated Bill (₨)</label><input type="number" class="f-ctrl" id="oAmt" placeholder="0"/></div>
+          <div class="f-group"><label class="f-label">Order Date</label><input type="date" class="f-ctrl" id="oDate" value="${today()}"/></div>
+        </div>
+        <div class="g2">
+          <div class="f-group"><label class="f-label">Expected Delivery Date <span class="muted">(optional)</span></label><input type="date" class="f-ctrl" id="oDelivery"/></div>
+          <div class="f-group"><label class="f-label">Next Vendor Visit <span class="muted">(optional)</span></label><input type="date" class="f-ctrl" id="oVisit"/></div>
+        </div>
+        <button class="btn btn-primary" onclick="placeOrder('${sv.id}','${esc(sv.name)}')">Place Order</button>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Open Bills</div>
+        ${open.length?`<div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Items</th><th>Estimated</th><th>Actual Bill ₨</th><th>Paid</th><th>Due</th><th>Delivery</th><th>Next Visit</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>${open.map(o=>`<tr>
+            <td class="sm">${esc(o.items)}</td>
+            <td class="sm muted">${fmt(+o.estimatedBill||0)}</td>
+            <td><input type="number" value="${+o.actualBill||+o.estimatedBill||0}" style="width:90px;padding:4px 6px;border:1px solid var(--bd);border-radius:4px;font-size:12px" onchange="updOrderBill('${o.id}','${sv.id}',this.value)" title="Edit confirmed amount after delivery"/></td>
+            <td>${fmt(+o.paid||0)}</td>
+            <td style="color:var(--err);font-weight:600">${fmt(+o.due||0)}</td>
+            <td class="sm muted">${o.deliveryDate||'—'}</td>
+            <td class="sm muted">${o.nextVendorVisit||'—'}</td>
+            <td>${sBadge(o.status)}</td>
+            <td><div class="acts">
+              <button class="btn btn-xs btn-primary" onclick="showMakeVendorPayModal('${sv.id}','${o.id}',${+o.due||0})">Pay</button>
+              <button class="btn btn-xs" onclick="showEditOrderModal('${o.id}','${sv.id}')">Edit</button>
+            </div></td>
+          </tr>`).join('')}</tbody>
+        </table></div>`:emptyEl('✅','No open bills','16px')}
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Payment History — Vendor</div>
+        ${vPayHist.length?`<div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Date</th><th>Amount</th><th>Type</th><th>Method</th><th>Note</th><th></th></tr></thead>
+          <tbody>${[...vPayHist].reverse().map(vp=>`<tr>
+            <td class="sm">${vp.date}</td>
+            <td><input type="number" value="${+vp.amount||0}" style="width:100px;padding:4px 6px;border:1px solid var(--bd);border-radius:4px;font-size:12px" id="vpa_${vp.id}"/></td>
+            <td>${vp.paymentType==='advance'?'<span class="adv-badge">Advance</span>':'<span class="badge b-gray">Regular</span>'}</td>
+            <td class="sm">${esc(vp.method||'—')}</td>
+            <td><input type="text" value="${esc(vp.note||'')}" style="width:140px;padding:4px 6px;border:1px solid var(--bd);border-radius:4px;font-size:12px" id="vpn_${vp.id}" placeholder="Note…"/></td>
+            <td><button class="btn btn-xs btn-primary" onclick="saveVendorPay('${vp.id}','${sv.id}')">Save</button></td>
+          </tr>`).join('')}</tbody>
+        </table></div>`:emptyEl('💰','No payments recorded','16px')}
+      </div>
+      ${hist.length?`<div class="card">
+        <div class="card-title">Completed Orders History</div>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Date</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody>${hist.map(o=>`<tr><td class="sm">${o.date}</td><td class="sm">${esc(o.items)}</td><td>${fmt(+o.actualBill||+o.estimatedBill||0)}</td><td>${sBadge(o.status)}</td></tr>`).join('')}</tbody>
+        </table></div>
+      </div>`:''}
+    </div>`:emptyEl('👈','Select a vendor to view orders')}
+  </div>`;
+}
+function selV(id){CUR.selVendor=id;renderPage();}
+function openWA(phone){let c=phone.replace(/[^0-9]/g,'');if(c.startsWith('0'))c='92'+c.slice(1);window.open('https://wa.me/'+c,'_blank');}
+
+async function saveVendorPay(vpId,vId){
+  const vp=DB.vendorPayments.find(x=>x.id===vpId);
+  const v=DB.vendors.find(x=>x.id===vId);
+  if(!vp||!v)return;
+  const newAmt=parseFloat(document.getElementById('vpa_'+vpId)?.value)||0;
+  const newNote=(document.getElementById('vpn_'+vpId)?.value||'').trim();
+  const diff=newAmt-(+vp.amount||0);
+  // Adjust vendor balance by the difference
+  const newBal=Math.max(0,(+v.balance||0)-diff);
+  try{
+    const updVP={...vp,amount:newAmt,note:newNote};
+    await apiPost({action:'updVendorPayment',id:vpId,row:updVP});
+    Object.assign(vp,updVP);
+    if(diff!==0){await apiPost({action:'updVendor',id:vId,row:{...v,balance:newBal}});v.balance=newBal;}
+    toast('Payment record updated','ok');renderPage();
+  }catch(e){toast(e.message,'err');}
+}
+
+function showEditOrderModal(oId,vId){
+  const o=DB.orders.find(x=>x.id===oId);if(!o)return;
+  showModal(`
+    <div class="modal-hd"><div class="modal-title">Edit Order</div><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="f-group"><label class="f-label">Order Description</label><input class="f-ctrl" id="eoItems" value="${esc(o.items)}"/></div>
+    <div class="g2">
+      <div class="f-group"><label class="f-label">Estimated Bill (₨)</label><input type="number" class="f-ctrl" id="eoEst" value="${+o.estimatedBill||0}"/></div>
+      <div class="f-group"><label class="f-label">Actual / Confirmed Bill (₨)</label><input type="number" class="f-ctrl" id="eoActual" value="${+o.actualBill||+o.estimatedBill||0}" placeholder="Fill when delivered"/></div>
+    </div>
+    <div class="g2">
+      <div class="f-group"><label class="f-label">Order Date</label><input type="date" class="f-ctrl" id="eoDate" value="${o.date||today()}"/></div>
+      <div class="f-group"><label class="f-label">Delivery Date</label><input type="date" class="f-ctrl" id="eoDel" value="${o.deliveryDate||''}"/></div>
+    </div>
+    <div class="f-group"><label class="f-label">Next Vendor Visit</label><input type="date" class="f-ctrl" id="eoVisit" value="${o.nextVendorVisit||''}"/></div>
+    <div class="alert alert-info">Changing the actual bill amount will update the vendor balance accordingly.</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveEditOrder('${oId}','${vId}')">✓ Save Changes</button>
+      <button class="btn btn-danger" onclick="deleteOrder('${oId}','${vId}')">Delete Order</button>
+    </div>
+  `);
+}
+async function saveEditOrder(oId,vId){
+  const o=DB.orders.find(x=>x.id===oId);const v=DB.vendors.find(x=>x.id===vId);if(!o||!v)return;
+  const oldActual=+o.actualBill||+o.estimatedBill||0;
+  const newActual=parseFloat(val('eoActual'))||0;
+  const diff=newActual-oldActual;
+  o.items=val('eoItems')||o.items;
+  o.estimatedBill=parseFloat(val('eoEst'))||+o.estimatedBill||0;
+  o.actualBill=newActual;
+  o.date=val('eoDate')||o.date;
+  o.deliveryDate=val('eoDel')||'';
+  o.nextVendorVisit=val('eoVisit')||'';
+  o.due=Math.max(0,newActual-(+o.paid||0));
+  o.status=o.due<=0?'paid':(+o.paid||0)>0?'partial':'unpaid';
+  try{
+    await apiPost({action:'updOrder',id:oId,row:o});
+    if(diff!==0){
+      v.balance=Math.max(0,(+v.balance||0)+diff);
+      await apiPost({action:'updVendor',id:vId,row:v});
+    }
+    toast('Order updated','ok');closeModal();refreshTopbar();renderPage();
+  }catch(e){toast(e.message,'err');}
+}
+async function deleteOrder(oId,vId){
+  if(!confirm('Delete this order? Vendor balance will be adjusted.'))return;
+  const o=DB.orders.find(x=>x.id===oId);const v=DB.vendors.find(x=>x.id===vId);if(!o||!v)return;
+  const unpaid=+o.due||0;
+  try{
+    await apiPost({action:'delOrder',id:oId});DB.orders=DB.orders.filter(x=>x.id!==oId);
+    if(unpaid>0){v.balance=Math.max(0,(+v.balance||0)-unpaid);await apiPost({action:'updVendor',id:vId,row:v});}
+    toast('Order deleted','ok');closeModal();renderPage();
+  }catch(e){toast(e.message,'err');}
+}
+
+function showVendorWAModal(vId){
+  const v=DB.vendors.find(x=>x.id===vId);if(!v)return;
+  const openOrders=DB.orders.filter(o=>o.vendorId===vId&&o.status!=='paid');
+  const low=DB.products.filter(p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert);
+  _waBill=`Assalamualaikum ${v.name},\n\nYour current outstanding balance with us: *₨${Math.round(+v.balance||0)}*\n\nOpen orders:\n${openOrders.map(o=>`- ${o.items}: Due ₨${Math.round(+o.due||0)}`).join('\n')||'None'}\n\nPlease arrange settlement at your earliest convenience.\n\nJazakAllah Khair 🙏`;
+  const orderSugg=low.map(p=>`${p.name} — ${p.qty} remaining, need restock`).join('\n')||'Please let us know available items.';
+  _waOrder=`Assalamualaikum ${v.name},\n\nWe would like to place the following order:\n\n${orderSugg}\n\nPlease confirm availability and pricing.\n\nThank you!`;
+  showModal(`
+    <div class="modal-hd"><div class="modal-title">WhatsApp — ${esc(v.name)}</div><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="g2" style="margin-bottom:16px">
+      <div class="wa-option sel" id="waOptBill" onclick="setWAOpt('bill')">
+        <div class="wa-option-ic">💳</div>
+        <div class="wa-option-tx">Current Bill</div>
+        <div class="sm muted">Send outstanding balance</div>
+      </div>
+      <div class="wa-option" id="waOptOrd" onclick="setWAOpt('order')">
+        <div class="wa-option-ic">📦</div>
+        <div class="wa-option-tx">Place Order</div>
+        <div class="sm muted">Send order request</div>
+      </div>
+    </div>
+    <div class="f-group">
+      <label class="f-label">Message Preview (editable)</label>
+      <textarea class="f-ctrl" id="waMsg" rows="10" style="font-size:12px"></textarea>
+    </div>
+    <button class="btn btn-wa btn-block" onclick="sendVendorWA('${esc(v.phone||'')}')">📱 Open in WhatsApp</button>
+  `,true);
+  setTimeout(()=>{const el=document.getElementById('waMsg');if(el)el.value=_waBill;},50);
+}
+function sendVendorWA(phone){
+  const msg=val('waMsg');let num=phone.replace(/[^0-9]/g,'');if(num.startsWith('0'))num='92'+num.slice(1);
+  if(num)window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');
+  else toast('No phone number for this vendor','warn');
+}
+
+function showMakeVendorPayModal(vId,oId,suggestedAmt){
+  _vPayType='regular';
+  const v=DB.vendors.find(x=>x.id===vId);if(!v)return;
+  const openOrders=DB.orders.filter(o=>o.vendorId===vId&&o.status!=='paid');
+  const totalDue=openOrders.reduce((s,o)=>s+(+o.due||0),0);
+  const adv=+v.advanceBalance||0;
+  showModal(`
+    <div class="modal-hd"><div class="modal-title">Payment — ${esc(v.name)}</div><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="g2" style="margin-bottom:16px">
+      <div class="metric"><div class="metric-lbl">Balance Due</div><div class="metric-val" style="color:var(--err)">${fmt(totalDue)}</div></div>
+      <div class="metric"><div class="metric-lbl">Advance Credit</div><div class="metric-val" style="color:var(--p)">${fmt(adv)}</div><div class="metric-sub">Already with vendor</div></div>
+    </div>
+    <div class="g2" style="margin-bottom:14px">
+      <div class="pay-type-btn sel" id="ptRegular" onclick="setVPayType('regular')">
+        <div class="pt-ic">💳</div><div class="pt-tx">Regular Payment</div><div class="pt-sub">Pay against current bill</div>
+      </div>
+      <div class="pay-type-btn" id="ptAdvance" onclick="setVPayType('advance')">
+        <div class="pt-ic">⏩</div><div class="pt-tx">Advance Payment</div><div class="pt-sub">Pay before order — credit for future</div>
+      </div>
+    </div>
+    <div id="vPayTypeNote" class="alert alert-info" style="margin-bottom:12px">Regular payment will be applied to open bills oldest first.</div>
+    ${openOrders.length&&adv>0?`<div class="alert alert-ok" style="margin-bottom:12px">✅ You have <strong>${fmt(adv)}</strong> advance credit with this vendor. It will auto-apply to new orders.</div>`:''}
+    <div class="f-group"><label class="f-label">Amount (₨)</label>
+      <div style="display:flex;gap:8px">
+        <input type="number" class="f-ctrl" id="vpAmt" value="${suggestedAmt||''}" placeholder="0"/>
+        <button class="btn" onclick="g('vpAmt').value=${Math.round(totalDue)}">Full Due</button>
+      </div>
+    </div>
+    <div class="f-group"><label class="f-label">Payment Method</label>
+      <select class="f-ctrl" id="vpMethod"><option>Cash</option><option>Online Transfer</option><option>Cheque</option></select>
+    </div>
+    <div class="f-group"><label class="f-label">Note (optional)</label><input class="f-ctrl" id="vpNote" placeholder="e.g. Bank ref #123"/></div>
+    <button class="btn btn-ok btn-block" onclick="recordVendorPayment('${vId}')">✓ Record Payment</button>
+  `);
+}
+async function recordVendorPayment(vId){
+  const v=DB.vendors.find(x=>x.id===vId);if(!v)return;
+  const amt=parseFloat(val('vpAmt'));if(!amt||amt<=0){toast('Enter amount','warn');return;}
+  const isAdvance=(typeof _vPayType!=='undefined'&&_vPayType==='advance');
+  const payRow={id:uid(),date:today(),vendorId:vId,vendorName:v.name,amount:amt,method:val('vpMethod'),note:val('vpNote'),paymentType:isAdvance?'advance':'regular'};
+  try{
+    await apiPost({action:'addVendorPayment',row:payRow});DB.vendorPayments.push(payRow);
+    if(isAdvance){
+      // Store as advance credit, no bill reduction
+      const newAdv=(+v.advanceBalance||0)+amt;
+      await apiPost({action:'updVendor',id:vId,row:{...v,advanceBalance:newAdv}});v.advanceBalance=newAdv;
+      toast(`${fmt(amt)} advance recorded for ${v.name}`,'ok');
+    } else {
+      // Apply to open orders oldest first
+      let rem=amt;
+      const openOrders=DB.orders.filter(o=>o.vendorId===vId&&o.status!=='paid').sort((a,b)=>a.date>b.date?1:-1);
+      for(const ord of openOrders){
+        if(rem<=0)break;
+        const due=+ord.due||0;const applying=Math.min(rem,due);
+        ord.paid=(+ord.paid||0)+applying;ord.due=Math.max(0,due-applying);
+        ord.status=ord.due<=0?'paid':ord.paid>0?'partial':'unpaid';rem-=applying;
+        await apiPost({action:'updOrder',id:ord.id,row:ord});
+      }
+      const newBal=Math.max(0,(+v.balance||0)-amt);
+      await apiPost({action:'updVendor',id:vId,row:{...v,balance:newBal}});v.balance=newBal;
+      toast(`${fmt(amt)} paid to ${v.name}`,'ok');
+    }
+    closeModal();refreshTopbar();renderPage();
+  }catch(e){toast(e.message,'err');}
+}
+
+function showVendorModal(id){
+  const v=id?DB.vendors.find(x=>x.id===id):null;
+  showModal(`
+    <div class="modal-hd"><div class="modal-title">${v?'Edit Vendor':'Add Vendor'}</div><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="g2">
+      <div class="f-group"><label class="f-label">Vendor Name *</label><input class="f-ctrl" id="vN" value="${esc(v?.name||'')}"/></div>
+      <div class="f-group"><label class="f-label">Phone / WhatsApp</label><input class="f-ctrl" id="vPh" value="${esc(v?.phone||'')}"/></div>
+    </div>
+    <div class="f-group"><label class="f-label">Products Supplied</label><input class="f-ctrl" id="vPr" value="${esc(v?.products||'')}" placeholder="e.g. Beverages, Cables"/></div>
+    <div class="f-group"><label class="f-label">Description</label><textarea class="f-ctrl" id="vDs" rows="3" placeholder="e.g. Supplier from Lays, visits every Monday…">${esc(v?.description||'')}</textarea></div>
+    <button class="btn btn-primary btn-block" onclick="saveVendor('${id||''}')">Save Vendor</button>
+  `);
+}
+async function saveVendor(id){
+  const row={name:val('vN'),phone:val('vPh'),products:val('vPr'),description:val('vDs')};
+  if(!row.name){toast('Name required','warn');return;}
+  try{
+    if(id){await apiPost({action:'updVendor',id,row});const i=DB.vendors.findIndex(v=>v.id===id);if(i>=0)DB.vendors[i]={...DB.vendors[i],...row};toast('Updated','ok');}
+    else{row.id=uid();row.balance=0;await apiPost({action:'addVendor',row});DB.vendors.push(row);toast('Vendor added','ok');}
+    closeModal();renderPage();
+  }catch(e){toast(e.message,'err');}
+}
+async function delVendor(id){
+  if(!confirm('Delete this vendor?'))return;
+  try{await apiPost({action:'delVendor',id});DB.vendors=DB.vendors.filter(v=>v.id!==id);if(CUR.selVendor===id)CUR.selVendor=null;toast('Deleted','ok');renderPage();}catch(e){toast(e.message,'err');}
+}
+async function placeOrder(vId,vName){
+  const items=val('oItems');if(!items){toast('Describe the order','warn');return;}
+  const amt=parseFloat(val('oAmt'))||0;
+  const v=DB.vendors.find(x=>x.id===vId);
+  const adv=+v?.advanceBalance||0;
+  // Auto-apply advance credit
+  const autoApplied=Math.min(adv,amt);
+  const netDue=Math.max(0,amt-autoApplied);
+  const row={id:uid(),vendorId:vId,vendorName:vName,items,estimatedBill:amt,actualBill:amt,paid:autoApplied,due:netDue,date:val('oDate')||today(),status:netDue<=0?(amt>0?'paid':'unpaid'):autoApplied>0?'partial':'unpaid',deliveryDate:val('oDelivery')||'',nextVendorVisit:val('oVisit')||''};
+  try{
+    await apiPost({action:'addOrder',row});DB.orders.push(row);
+    if(amt>0&&v){
+      const newBal=(+v.balance||0)+netDue;
+      const newAdv=Math.max(0,adv-autoApplied);
+      await apiPost({action:'updVendor',id:vId,row:{...v,balance:newBal,advanceBalance:newAdv}});
+      v.balance=newBal;v.advanceBalance=newAdv;
+    }
+    if(autoApplied>0)toast(`Order placed! ${fmt(autoApplied)} advance credit auto-applied.`,'ok');
+    else toast('Order placed!','ok');
+    refreshTopbar();renderPage();
+  }catch(e){toast(e.message,'err');}
+}
+async function updOrderBill(oId,vId,newAmt){
+  const o=DB.orders.find(x=>x.id===oId);if(!o)return;
+  const v=DB.vendors.find(x=>x.id===vId);
+  const oldAmt=+o.actualBill||+o.estimatedBill||0;const diff=(+newAmt||0)-oldAmt;
+  o.actualBill=+newAmt||0;o.due=Math.max(0,o.actualBill-(+o.paid||0));
+  o.status=o.due<=0?'paid':(+o.paid||0)>0?'partial':'unpaid';
+  try{
+    await apiPost({action:'updOrder',id:oId,row:o});
+    if(v&&diff!==0){v.balance=Math.max(0,(+v.balance||0)+diff);await apiPost({action:'updVendor',id:vId,row:v});}
+    toast('Bill updated','ok');renderPage();
+  }catch(e){toast(e.message,'err');}
+}
+
+/* ══════════════════════════════════════
+   BILL TEMPLATE
+══════════════════════════════════════ */
+const DEFAULT_TPL={
+  shopName:'NAWAB BAKERS AND MOBILE',
+  shopAddress:'',
+  shopPhone:'',
+  shopEmail:'',
+  headerNote:'Thank you for your business!',
+  footerNote:'Please visit again 🙏',
+  showLogo:false,
+  paperSize:'80mm',
+  fontSize:'13px',
+  showBarcode:false,
+  accentColor:'#4f46e5',
+  layout:'thermal'
+};
+function getTpl(){try{return JSON.parse(localStorage.getItem('shopOS_tpl')||'null')||DEFAULT_TPL;}catch{return DEFAULT_TPL;}}
+function saveTpl(tpl){localStorage.setItem('shopOS_tpl',JSON.stringify(tpl));toast('Template saved','ok');renderPage();}
+
+function pgBillTemplate(){
+  const tpl=getTpl();
+  return `
+  <div class="cols-2" style="align-items:start">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Shop Info</div>
+        <div class="f-group"><label class="f-label">Shop / Business Name</label><input class="f-ctrl" id="tShop" value="${esc(tpl.shopName)}"/></div>
+        <div class="f-group"><label class="f-label">Address</label><input class="f-ctrl" id="tAddr" value="${esc(tpl.shopAddress)}" placeholder="e.g. Shop #5, Main Market, Karachi"/></div>
+        <div class="g2">
+          <div class="f-group"><label class="f-label">Phone</label><input class="f-ctrl" id="tPhone" value="${esc(tpl.shopPhone)}" placeholder="0300-XXXXXXX"/></div>
+          <div class="f-group"><label class="f-label">Email <span class="muted">(optional)</span></label><input class="f-ctrl" id="tEmail" value="${esc(tpl.shopEmail)}" placeholder="shop@example.com"/></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Messages</div>
+        <div class="f-group"><label class="f-label">Header Note (under shop name)</label><input class="f-ctrl" id="tHdr" value="${esc(tpl.headerNote)}" placeholder="e.g. Welcome!"/></div>
+        <div class="f-group"><label class="f-label">Footer Note (bottom of bill)</label><input class="f-ctrl" id="tFtr" value="${esc(tpl.footerNote)}" placeholder="e.g. Please visit again"/></div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Layout &amp; Style</div>
+        <div class="g2">
+          <div class="f-group"><label class="f-label">Paper Size</label>
+            <select class="f-ctrl" id="tPaper">
+              <option value="80mm" ${tpl.paperSize==='80mm'?'selected':''}>80mm Thermal Printer</option>
+              <option value="58mm" ${tpl.paperSize==='58mm'?'selected':''}>58mm Thermal Printer</option>
+              <option value="A4" ${tpl.paperSize==='A4'?'selected':''}>A4 Full Page</option>
+              <option value="half" ${tpl.paperSize==='half'?'selected':''}>A5 / Half Page</option>
+            </select>
+          </div>
+          <div class="f-group"><label class="f-label">Font Size</label>
+            <select class="f-ctrl" id="tFont">
+              <option value="11px" ${tpl.fontSize==='11px'?'selected':''}>Small (11px)</option>
+              <option value="13px" ${tpl.fontSize==='13px'?'selected':''}>Medium (13px)</option>
+              <option value="15px" ${tpl.fontSize==='15px'?'selected':''}>Large (15px)</option>
+            </select>
+          </div>
+        </div>
+        <div class="f-group"><label class="f-label">Accent Color (headings &amp; totals)</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="color" class="f-ctrl" id="tColor" value="${tpl.accentColor}" style="width:60px;height:38px;padding:2px 4px;cursor:pointer"/>
+            <span class="sm muted">Used for shop name and total row</span>
+          </div>
+        </div>
+        <div class="f-group"><label class="f-label">Layout Style</label>
+          <div class="g2">
+            <div class="pay-type-btn ${tpl.layout==='thermal'?'sel':''}" onclick="setTplLayout('thermal')" id="tlThermal">
+              <div class="pt-ic">🖨️</div><div class="pt-tx">Thermal / POS</div><div class="pt-sub">Compact receipt style</div>
+            </div>
+            <div class="pay-type-btn ${tpl.layout==='a4'?'sel':''}" onclick="setTplLayout('a4')" id="tlA4">
+              <div class="pt-ic">📄</div><div class="pt-tx">Professional Invoice</div><div class="pt-sub">Formal A4 invoice style</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="saveBillTemplate()">💾 Save Template</button>
+        <button class="btn" onclick="resetBillTemplate()">↺ Reset to Default</button>
+        <button class="btn btn-ok" onclick="previewBillTemplate()">👁 Preview</button>
+      </div>
+    </div>
+    <div class="card" style="position:sticky;top:70px">
+      <div class="card-title">Live Preview</div>
+      <div id="tplPreview" style="border:1px solid var(--bd);border-radius:var(--rs);padding:16px;background:#fff;color:#000;font-family:monospace;font-size:${tpl.fontSize};max-width:${tpl.paperSize==='58mm'?'200px':tpl.paperSize==='80mm'?'280px':'100%'};margin:0 auto">
+        ${buildBillPreviewHTML(tpl)}
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildBillPreviewHTML(tpl){
+  const accent=tpl.accentColor||'#4f46e5';
+  const items=[{name:'Mineral Water',qty:2,price:60},{name:'Bread Loaf',qty:1,price:120}];
+  const total=items.reduce((s,i)=>s+i.price*i.qty,0);
+  if(tpl.layout==='a4'){
+    return `<div style="padding:8px">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">
+        <div><div style="font-size:18px;font-weight:700;color:${accent}">${esc(tpl.shopName||'ShopOS')}</div>
+          ${tpl.shopAddress?`<div style="font-size:11px;color:#666">${esc(tpl.shopAddress)}</div>`:''}
+          ${tpl.shopPhone?`<div style="font-size:11px;color:#666">📞 ${esc(tpl.shopPhone)}</div>`:''}
+        </div>
+        <div style="text-align:right;font-size:11px;color:#666">
+          <div style="font-size:14px;font-weight:600;color:${accent}">INVOICE</div>
+          <div>Date: ${today()}</div><div>Bill #: SAMPLE</div>
+        </div>
+      </div>
+      <div style="background:#f3f4f6;padding:8px;border-radius:4px;margin-bottom:10px;font-size:11px">
+        <strong>Customer:</strong> Walk-in Customer
+        ${tpl.headerNote?`<div style="color:#666;margin-top:2px">${esc(tpl.headerNote)}</div>`:''}
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:${accent};color:#fff"><th style="padding:5px 8px;text-align:left">Item</th><th style="padding:5px 8px">Qty</th><th style="padding:5px 8px;text-align:right">Amount</th></tr></thead>
+        <tbody>${items.map((i,idx)=>`<tr style="background:${idx%2?'#f9f9f9':'#fff'}"><td style="padding:5px 8px">${i.name}</td><td style="padding:5px 8px;text-align:center">${i.qty}</td><td style="padding:5px 8px;text-align:right">₨${i.price*i.qty}</td></tr>`).join('')}</tbody>
+      </table>
+      <div style="margin-top:10px;text-align:right;font-size:13px">
+        <div>Total: ₨${total}</div>
+        <div style="font-size:15px;font-weight:700;color:${accent}">Payable: ₨${total}</div>
+      </div>
+      ${tpl.footerNote?`<div style="margin-top:10px;text-align:center;font-size:11px;color:#888;border-top:1px solid #eee;padding-top:8px">${esc(tpl.footerNote)}</div>`:''}
+    </div>`;
+  }
+  // Thermal layout
+  return `<div style="text-align:center;padding:4px">
+    <div style="font-size:16px;font-weight:700;color:${accent}">${esc(tpl.shopName||'ShopOS')}</div>
+    ${tpl.shopAddress?`<div style="font-size:10px">${esc(tpl.shopAddress)}</div>`:''}
+    ${tpl.shopPhone?`<div style="font-size:10px">${esc(tpl.shopPhone)}</div>`:''}
+    ${tpl.headerNote?`<div style="font-size:10px;color:#666">${esc(tpl.headerNote)}</div>`:''}
+    <div style="border-top:1px dashed #000;margin:6px 0"></div>
+    <div style="text-align:left;font-size:10px">Date: ${today()} | Bill #: SAMPLE</div>
+    <div style="text-align:left;font-size:10px">Customer: Walk-in</div>
+    <div style="border-top:1px dashed #000;margin:6px 0"></div>
+    <table style="width:100%;font-size:10px">
+      ${items.map(i=>`<tr><td style="text-align:left">${i.name}</td><td>x${i.qty}</td><td style="text-align:right">₨${i.price*i.qty}</td></tr>`).join('')}
+    </table>
+    <div style="border-top:1px dashed #000;margin:6px 0"></div>
+    <table style="width:100%;font-size:10px">
+      <tr><td>Total</td><td style="text-align:right">₨${total}</td></tr>
+      <tr style="font-weight:700;color:${accent}"><td>Payable</td><td style="text-align:right">₨${total}</td></tr>
+      <tr><td>Status</td><td style="text-align:right">Paid</td></tr>
+    </table>
+    <div style="border-top:1px dashed #000;margin:6px 0"></div>
+    ${tpl.footerNote?`<div style="font-size:10px">${esc(tpl.footerNote)}</div>`:''}
+  </div>`;
+}
+
+function saveBillTemplate(){
+  const tpl={
+    shopName:val('tShop'),shopAddress:val('tAddr'),shopPhone:val('tPhone'),shopEmail:val('tEmail'),
+    headerNote:val('tHdr'),footerNote:val('tFtr'),
+    paperSize:val('tPaper'),fontSize:val('tFont'),
+    accentColor:g('tColor')?.value||'#4f46e5',
+    layout:(typeof _tplLayout!=='undefined'?_tplLayout:getTpl().layout)||'thermal'
+  };
+  saveTpl(tpl);
+}
+function resetBillTemplate(){if(confirm('Reset to default template?')){localStorage.removeItem('shopOS_tpl');toast('Template reset','ok');renderPage();}}
+function previewBillTemplate(){
+  const tpl=getTpl();
+  const dummyBill={id:'PREVIEW',date:today(),customerName:'Walk-in Customer',items:[{name:'Mineral Water',qty:2,price:60},{name:'Bread Loaf',qty:1,price:120}],totalAmount:300,payableAmount:300,amountPaid:300,paymentMethod:'Cash',paymentStatus:'paid'};
+  printBillWithTpl(dummyBill,tpl,false);
+}
+function pgPayments(){
+  const allVP=[...DB.vendorPayments].sort((a,b)=>b.date>a.date?1:-1);
+  const allCP=[...DB.customerPayments].sort((a,b)=>b.date>a.date?1:-1);
+  const totalVP=allVP.reduce((s,p)=>s+(+p.amount||0),0);
+  const totalCP=allCP.reduce((s,p)=>s+(+p.amount||0),0);
+  return `
+  <div class="metrics" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="metric"><div class="metric-lbl">Total Paid to Vendors</div><div class="metric-val" style="color:var(--err)">${fmt(totalVP)}</div><div class="metric-sub">${allVP.length} payments</div></div>
+    <div class="metric"><div class="metric-lbl">Total Collected from Customers</div><div class="metric-val" style="color:var(--ok)">${fmt(totalCP)}</div><div class="metric-sub">${allCP.length} payments</div></div>
+    <div class="metric"><div class="metric-lbl">Net Flow</div><div class="metric-val" style="color:${totalCP-totalVP>=0?'var(--ok)':'var(--err)'}">${fmt(Math.abs(totalCP-totalVP))}</div><div class="metric-sub">${totalCP-totalVP>=0?'Collected more':'Paid more'}</div></div>
+  </div>
+  <div class="cols-2">
+    <div class="card">
+      <div class="card-title">Payments Made to Vendors</div>
+      ${allVP.length?`<div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Date</th><th>Vendor</th><th>Amount</th><th>Type</th><th>Method</th><th>Note</th></tr></thead>
+        <tbody>${allVP.map(p=>`<tr>
+          <td class="sm">${p.date}</td>
+          <td><strong>${esc(p.vendorName)}</strong></td>
+          <td style="font-weight:600;color:var(--err)">${fmt(+p.amount||0)}</td>
+          <td>${p.paymentType==='advance'?'<span class="adv-badge">Advance</span>':'<span class="badge b-gray">Regular</span>'}</td>
+          <td class="sm">${esc(p.method||'—')}</td>
+          <td class="sm muted">${esc(p.note||'—')}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`:emptyEl('💸','No vendor payments recorded')}
+    </div>
+    <div class="card">
+      <div class="card-title">Payments Received from Customers</div>
+      ${allCP.length?`<div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Date</th><th>Customer</th><th>Amount</th><th>Type</th><th>Method</th><th>Note</th></tr></thead>
+        <tbody>${allCP.map(p=>`<tr>
+          <td class="sm">${p.date}</td>
+          <td><strong>${esc(p.customerName)}</strong></td>
+          <td style="font-weight:600;color:var(--ok)">${fmt(+p.amount||0)}</td>
+          <td>${p.paymentType==='advance'?'<span class="adv-badge">Advance</span>':'<span class="badge b-gray">Regular</span>'}</td>
+          <td class="sm">${esc(p.method||'—')}</td>
+          <td class="sm muted">${esc(p.note||'—')}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`:emptyEl('💰','No customer payments recorded')}
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════
+   EXPENSES
+══════════════════════════════════════ */
+function pgExpenses(){
+  const exps=[...DB.expenses].sort((a,b)=>b.date>a.date?1:-1);
+  const todayExps=exps.filter(e=>e.date===today());
+  const todayTotal=todayExps.reduce((s,e)=>s+(+e.amount||0),0);
+  const monthExps=exps.filter(e=>e.date&&e.date.slice(0,7)===today().slice(0,7));
+  const monthTotal=monthExps.reduce((s,e)=>s+(+e.amount||0),0);
+  return `
+  <div class="sec-head"><div></div><button class="btn btn-primary" onclick="showExpenseModal()">+ Add Expense</button></div>
+  <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+    <div class="metric"><div class="metric-lbl">Today</div><div class="metric-val" style="color:var(--err)">${fmt(todayTotal)}</div><div class="metric-sub">${todayExps.length} entries</div></div>
+    <div class="metric"><div class="metric-lbl">This Month</div><div class="metric-val" style="color:var(--warn)">${fmt(monthTotal)}</div></div>
+    <div class="metric"><div class="metric-lbl">All Time</div><div class="metric-val">${fmt(exps.reduce((s,e)=>s+(+e.amount||0),0))}</div></div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <input type="text" class="f-ctrl" id="expSrch" placeholder="Search..." style="max-width:200px" oninput="filterExp(this.value)"/>
+      <input type="date" class="f-ctrl" id="expFrom" style="max-width:140px"/>
+      <input type="date" class="f-ctrl" id="expTo" style="max-width:140px"/>
+      <button class="btn" onclick="filterExpDate()">Filter</button>
+      <button class="btn" onclick="renderPage()">Clear</button>
+    </div>
+    <div class="tbl-wrap"><table class="tbl" id="expTbl">
+      <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Paid By</th><th>Actions</th></tr></thead>
+      <tbody>${exps.length?exps.map(e=>`<tr>
+        <td class="sm">${e.date}</td>
+        <td><span class="badge b-gray">${esc(e.category||'General')}</span></td>
+        <td>${esc(e.description||'—')}</td>
+        <td style="font-weight:600;color:var(--err)">${fmt(+e.amount||0)}</td>
+        <td class="sm muted">${esc(e.paidBy||'—')}</td>
+        <td><div class="acts">
+          <button class="btn btn-xs" onclick="showExpenseModal('${e.id}')">Edit</button>
+          <button class="btn btn-xs btn-danger" onclick="delExpense('${e.id}')">Del</button>
+        </div></td>
+      </tr>`).join(''):`<tr><td colspan="6">${emptyEl('💸','No expenses recorded yet')}</td></tr>`}
+      </tbody>
+    </table></div>
+  </div>`;
+}
+function showExpenseModal(id){
+  const e=id?DB.expenses.find(x=>x.id===id):null;
+  const cats=['Electricity','Rent','Salary','Transport','Grocery','Maintenance','Internet','Phone Bill','Miscellaneous','Other'];
+  showModal(`
+    <div class="modal-hd"><div class="modal-title">${e?'Edit':'Add'} Expense</div><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="g2">
+      <div class="f-group"><label class="f-label">Date *</label><input type="date" class="f-ctrl" id="exDate" value="${e?.date||today()}"/></div>
+      <div class="f-group"><label class="f-label">Amount (₨) *</label><input type="number" class="f-ctrl" id="exAmt" value="${e?.amount||''}"/></div>
+    </div>
+    <div class="f-group"><label class="f-label">Category</label><select class="f-ctrl" id="exCat">${cats.map(c=>`<option value="${c}" ${e?.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="f-group"><label class="f-label">Description</label><input class="f-ctrl" id="exDesc" value="${esc(e?.description||'')}" placeholder="e.g. Electricity bill for April"/></div>
+    <div class="f-group"><label class="f-label">Paid By</label><input class="f-ctrl" id="exPaid" value="${esc(e?.paidBy||'')}" placeholder="e.g. Admin, Cash drawer"/></div>
+    <div class="f-group"><label class="f-label">Note</label><input class="f-ctrl" id="exNote" value="${esc(e?.note||'')}"/></div>
+    <button class="btn btn-primary btn-block" onclick="saveExpense('${id||''}')">Save Expense</button>
+  `);
+}
+async function saveExpense(id){
+  const row={date:val('exDate'),amount:parseFloat(val('exAmt'))||0,category:val('exCat'),description:val('exDesc'),paidBy:val('exPaid'),note:val('exNote')};
+  if(!row.amount){toast('Enter an amount','warn');return;}
+  try{
+    if(id){await apiPost({action:'updExpense',id,row});const i=DB.expenses.findIndex(x=>x.id===id);if(i>=0)DB.expenses[i]={...DB.expenses[i],...row};toast('Updated','ok');}
+    else{row.id=uid();await apiPost({action:'addExpense',row});DB.expenses.push(row);toast('Saved','ok');}
+    closeModal();renderPage();
+  }catch(e){toast(e.message,'err');}
+}
+async function delExpense(id){
+  if(!confirm('Delete this expense?'))return;
+  try{await apiPost({action:'delExpense',id});DB.expenses=DB.expenses.filter(x=>x.id!==id);toast('Deleted','ok');renderPage();}
+  catch(e){toast(e.message,'err');}
+}
+function filterExp(v){document.querySelectorAll('#expTbl tbody tr').forEach(r=>r.style.display=r.textContent.toLowerCase().includes(v.toLowerCase())?'':'none');}
+function filterExpDate(){
+  const from=val('expFrom'),to=val('expTo');if(!from&&!to)return;
+  document.querySelectorAll('#expTbl tbody tr').forEach(r=>{const d=r.cells[0]?.textContent||'';r.style.display=(!from||d>=from)&&(!to||d<=to)?'':'none';});
+}
+
+/* ══════════════════════════════════════
+   REPORTS
+══════════════════════════════════════ */
+function pgReports(){
+  return `
+  <div class="cols-2" style="align-items:start">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Report Type</div>
+        <div class="pills" style="margin-bottom:12px;row-gap:8px">
+          <button class="pill ${CUR.rptType==='sales'?'on':''}" onclick="setRpt('type','sales')">💰 Sales</button>
+          <button class="pill ${CUR.rptType==='stock'?'on':''}" onclick="setRpt('type','stock')">📦 Stock</button>
+          <button class="pill ${CUR.rptType==='expiry'?'on':''}" onclick="setRpt('type','expiry')">⏰ Expiry</button>
+          <button class="pill ${CUR.rptType==='vendor'?'on':''}" onclick="setRpt('type','vendor')">🏪 Vendor</button>
+          <button class="pill ${CUR.rptType==='customer'?'on':''}" onclick="setRpt('type','customer')">👥 Customer</button>
+          <button class="pill ${CUR.rptType==='expense'?'on':''}" onclick="setRpt('type','expense')">💸 Expenses</button>
+          <button class="pill ${CUR.rptType==='profit'?'on':''}" onclick="setRpt('type','profit')">📈 Profit</button>
+        </div>
+        ${['sales','expense','profit'].includes(CUR.rptType)?`
+        <div class="card-title">Period</div>
+        <div class="pills" style="margin-bottom:10px">
+          <button class="pill ${CUR.rptPeriod==='daily'?'on':''}" onclick="setRpt('period','daily')">Today</button>
+          <button class="pill ${CUR.rptPeriod==='weekly'?'on':''}" onclick="setRpt('period','weekly')">This Week</button>
+          <button class="pill ${CUR.rptPeriod==='monthly'?'on':''}" onclick="setRpt('period','monthly')">This Month</button>
+          <button class="pill ${CUR.rptPeriod==='range'?'on':''}" onclick="setRpt('period','range')">Date Range</button>
+        </div>
+        ${CUR.rptPeriod==='range'?`<div class="g2"><div class="f-group"><label class="f-label">From</label><input type="date" class="f-ctrl" id="rptFrom" value="${CUR.rptFrom}" onchange="CUR.rptFrom=this.value"/></div><div class="f-group"><label class="f-label">To</label><input type="date" class="f-ctrl" id="rptTo" value="${CUR.rptTo}" onchange="CUR.rptTo=this.value"/></div></div>`:''}`:''}
+        ${CUR.rptType==='vendor'?`<div class="f-group" style="margin-top:8px"><label class="f-label">Select Vendors (blank = all)</label>
+          <div style="max-height:160px;overflow-y:auto;border:1px solid var(--bd);border-radius:var(--rs);padding:8px">
+            ${DB.vendors.map(v=>`<label style="display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer;font-size:13px"><input type="checkbox" ${CUR.rptVendors.includes(v.id)?'checked':''} onchange="toggleRptSel('vendor','${v.id}')"/> ${esc(v.name)}</label>`).join('')}
+          </div></div>`:''}
+        ${CUR.rptType==='customer'?`<div class="f-group" style="margin-top:8px"><label class="f-label">Select Customers (blank = all)</label>
+          <div style="max-height:160px;overflow-y:auto;border:1px solid var(--bd);border-radius:var(--rs);padding:8px">
+            ${DB.customers.map(c=>`<label style="display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer;font-size:13px"><input type="checkbox" ${CUR.rptCustomers.includes(c.id)?'checked':''} onchange="toggleRptSel('customer','${c.id}')"/> ${esc(c.name)}</label>`).join('')}
+          </div></div>`:''}
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-primary" onclick="renderRptResult()">Generate Report</button>
+          <button class="btn" onclick="printRpt()">🖨 Print</button>
+        </div>
+      </div>
+    </div>
+    <div id="rptResult" class="card">${emptyEl('📊','Select a report type and click Generate','24px')}</div>
+  </div>`;
+}
+function setRpt(k,v){if(k==='type'){CUR.rptType=v;CUR.rptVendors=[];CUR.rptCustomers=[];}if(k==='period')CUR.rptPeriod=v;renderPage();}
+function toggleRptSel(kind,id){const arr=kind==='vendor'?CUR.rptVendors:CUR.rptCustomers;const i=arr.indexOf(id);i>=0?arr.splice(i,1):arr.push(id);}
+function getRptDates(){
+  const td=today();
+  if(CUR.rptPeriod==='daily')return{from:td,to:td};
+  if(CUR.rptPeriod==='weekly'){const d=new Date();d.setDate(d.getDate()-6);return{from:d.toISOString().slice(0,10),to:td};}
+  if(CUR.rptPeriod==='monthly')return{from:td.slice(0,7)+'-01',to:td};
+  return{from:CUR.rptFrom||td,to:CUR.rptTo||td};
+}
+function renderRptResult(){
+  const el=g('rptResult');if(!el)return;
+  const map={sales:rptSales,stock:rptStock,expiry:rptExpiry,vendor:rptVendor,customer:rptCustomer,expense:rptExpense,profit:rptProfit};
+  const fn=map[CUR.rptType];el.innerHTML=fn?fn():emptyEl('📊','Select a report type');
+}
+function rptSales(){
+  const{from,to}=getRptDates();const bills=DB.bills.filter(b=>b.date>=from&&b.date<=to);
+  const total=bills.reduce((s,b)=>s+b.payableAmount,0);
+  const collected=bills.reduce((s,b)=>s+(+b.amountPaid||0),0);
+  const pending=total-collected;
+  return `<div class="card-title">Sales — ${from===to?from:from+' → '+to}</div>
+  <div class="g2" style="margin-bottom:12px">
+    <div class="metric"><div class="metric-lbl">Billed</div><div class="metric-val">${fmt(total)}</div></div>
+    <div class="metric"><div class="metric-lbl">Collected</div><div class="metric-val" style="color:var(--ok)">${fmt(collected)}</div></div>
+    <div class="metric"><div class="metric-lbl">Pending</div><div class="metric-val" style="color:var(--err)">${fmt(pending)}</div></div>
+    <div class="metric"><div class="metric-lbl">Bills</div><div class="metric-val">${bills.length}</div></div>
+  </div>
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Customer</th><th>Amount</th><th>Paid</th><th>Status</th></tr></thead>
+  <tbody>${bills.length?bills.map(b=>`<tr><td class="sm">${b.date}</td><td>${esc(b.customerName)}</td><td>${fmt(b.payableAmount)}</td><td>${fmt(+b.amountPaid||0)}</td><td>${sBadge(b.paymentStatus)}</td></tr>`).join(''):`<tr><td colspan="5">${emptyEl('📄','No bills','10px')}</td></tr>`}</tbody></table></div>`;
+}
+function rptStock(){
+  const low=DB.products.filter(p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert);
+  const out=DB.products.filter(p=>p.qty===0);
+  return `<div class="card-title">Stock Report</div>
+  <div class="g2" style="margin-bottom:12px">
+    <div class="metric"><div class="metric-lbl">Products</div><div class="metric-val">${DB.products.length}</div></div>
+    <div class="metric"><div class="metric-lbl">Low Stock</div><div class="metric-val" style="color:var(--warn)">${low.length}</div></div>
+    <div class="metric"><div class="metric-lbl">Out of Stock</div><div class="metric-val" style="color:var(--err)">${out.length}</div></div>
+    <div class="metric"><div class="metric-lbl">Stock Value</div><div class="metric-val">${fmt(DB.products.reduce((s,p)=>s+p.qty*p.purchasePrice,0))}</div></div>
+  </div>
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Product</th><th>Shop</th><th>Qty</th><th>Buy ₨</th><th>Sell ₨</th><th>Value</th></tr></thead>
+  <tbody>${DB.products.map(p=>`<tr><td><strong>${esc(p.name)}</strong></td><td>${shBadge(p.shop)}</td>
+  <td style="${p.qty===0?'color:var(--err);font-weight:600':(p.qty<=p.lowStockAlert&&p.lowStockAlert>0?'color:var(--warn);font-weight:600':'')}">${p.qty}</td>
+  <td>${fmt(p.purchasePrice)}</td><td>${fmt(p.sellingPrice)}</td><td>${fmt(p.qty*p.purchasePrice)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function rptExpiry(){
+  const now=new Date();const cut=new Date();cut.setDate(cut.getDate()+60);
+  const expired=DB.products.filter(p=>p.expiryDate&&new Date(p.expiryDate)<now);
+  const soon=DB.products.filter(p=>{if(!p.expiryDate)return false;const d=new Date(p.expiryDate);return d>=now&&d<=cut;});
+  return `<div class="card-title">Expiry Report</div>
+  ${expired.length?`<div class="alert alert-err">🚫 ${expired.length} EXPIRED</div>
+  <div class="tbl-wrap"><table class="tbl" style="margin-bottom:12px"><thead><tr><th>Product</th><th>Shop</th><th>Qty</th><th>Expired On</th></tr></thead>
+  <tbody>${expired.map(p=>`<tr><td><strong>${esc(p.name)}</strong></td><td>${shBadge(p.shop)}</td><td>${p.qty}</td><td style="color:var(--err);font-weight:600">${p.expiryDate}</td></tr>`).join('')}</tbody></table></div>`:''}
+  ${soon.length?`<div class="alert alert-warn">⏰ ${soon.length} expiring within 60 days</div>
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Product</th><th>Shop</th><th>Qty</th><th>Expiry</th><th>Days Left</th></tr></thead>
+  <tbody>${soon.map(p=>{const days=Math.round((new Date(p.expiryDate)-now)/864e5);return`<tr><td><strong>${esc(p.name)}</strong></td><td>${shBadge(p.shop)}</td><td>${p.qty}</td><td style="color:var(--warn);font-weight:600">${p.expiryDate}</td><td>${days}d</td></tr>`;}).join('')}</tbody></table></div>`:''}
+  ${!expired.length&&!soon.length?'<div class="alert alert-ok">✅ No expiry issues found.</div>':''}`;
+}
+function rptVendor(){
+  let vendors=DB.vendors;if(CUR.rptVendors.length)vendors=vendors.filter(v=>CUR.rptVendors.includes(v.id));
+  return `<div class="card-title">Vendor Report</div>
+  <div class="g2" style="margin-bottom:12px">
+    <div class="metric"><div class="metric-lbl">Vendors</div><div class="metric-val">${vendors.length}</div></div>
+    <div class="metric"><div class="metric-lbl">Total Due</div><div class="metric-val" style="color:var(--err)">${fmt(vendors.reduce((s,v)=>s+(+v.balance||0),0))}</div></div>
+  </div>
+  ${vendors.map(v=>{
+    const open=DB.orders.filter(o=>o.vendorId===v.id&&o.status!=='paid');
+    const vp=DB.vendorPayments.filter(p=>p.vendorId===v.id);
+    return `<div style="border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+        <div><div style="font-weight:600">${esc(v.name)}</div><div class="sm muted">${v.phone||'—'}</div></div>
+        <div style="text-align:right"><div class="sm muted">Balance Due</div><div style="font-weight:600;color:${+v.balance>0?'var(--err)':'var(--ok)'}">${fmt(+v.balance||0)}</div></div>
+      </div>
+      <div class="sm" style="display:flex;gap:16px;margin-bottom:8px;flex-wrap:wrap">
+        <span>Open orders: <strong>${open.length}</strong></span>
+        <span>Payments made: <strong>${fmt(vp.reduce((s,p)=>s+(+p.amount||0),0))}</strong></span>
+        <span>Advance: <strong style="color:var(--p)">${fmt(+v.advanceBalance||0)}</strong></span>
+      </div>
+      ${open.length?`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Order</th><th>Bill</th><th>Paid</th><th>Due</th><th>Status</th></tr></thead>
+      <tbody>${open.map(o=>`<tr><td class="sm">${esc(o.items)}</td><td>${fmt(+o.actualBill||+o.estimatedBill||0)}</td><td>${fmt(+o.paid||0)}</td><td style="color:var(--err);font-weight:600">${fmt(+o.due||0)}</td><td>${sBadge(o.status)}</td></tr>`).join('')}</tbody></table></div>`:''}
+      <button class="btn btn-xs btn-danger" style="margin-top:8px" onclick="deleteVendorRecord('${v.id}')">🗑 Delete All Records</button>
+    </div>`;}).join('')}`;
+}
+function rptCustomer(){
+  let customers=DB.customers;if(CUR.rptCustomers.length)customers=customers.filter(c=>CUR.rptCustomers.includes(c.id));
+  return `<div class="card-title">Customer Report</div>
+  <div class="g2" style="margin-bottom:12px">
+    <div class="metric"><div class="metric-lbl">Customers</div><div class="metric-val">${customers.length}</div></div>
+    <div class="metric"><div class="metric-lbl">Total Outstanding</div><div class="metric-val" style="color:var(--err)">${fmt(customers.reduce((s,c)=>s+(+c.outstanding||0),0))}</div></div>
+  </div>
+  ${customers.map(c=>{
+    const pending=DB.bills.filter(b=>b.customerId===c.id&&b.paymentStatus!=='paid');
+    const cp=DB.customerPayments.filter(p=>p.customerId===c.id);
+    return `<div style="border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+        <div><div style="font-weight:600">${esc(c.name)}</div><div class="sm muted">${c.phone||'—'}</div></div>
+        <div style="display:flex;gap:12px">
+          <div style="text-align:right"><div class="sm muted">Total Billed</div><div style="font-weight:600">${fmt(+c.totalBilled||0)}</div></div>
+          <div style="text-align:right"><div class="sm muted">Outstanding</div><div style="font-weight:600;color:${+c.outstanding>0?'var(--err)':'var(--ok)'}">${fmt(+c.outstanding||0)}</div></div>
+        </div>
+      </div>
+      <div class="sm" style="display:flex;gap:16px;margin-bottom:8px;flex-wrap:wrap">
+        <span>Pending bills: <strong>${pending.length}</strong></span>
+        <span>Payments: <strong>${fmt(cp.reduce((s,p)=>s+(+p.amount||0),0))}</strong></span>
+        <span>Advance: <strong style="color:var(--p)">${fmt(+c.advanceBalance||0)}</strong></span>
+      </div>
+      ${pending.length?`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th></tr></thead>
+      <tbody>${pending.map(b=>{const due=b.payableAmount-(+b.amountPaid||0);return`<tr><td class="sm">${b.date}</td><td>${fmt(b.payableAmount)}</td><td>${fmt(+b.amountPaid||0)}</td><td style="color:var(--err);font-weight:600">${fmt(due)}</td><td>${sBadge(b.paymentStatus)}</td></tr>`;}).join('')}</tbody></table></div>`:''}
+      <button class="btn btn-xs btn-danger" style="margin-top:8px" onclick="deleteCustomerRecord('${c.id}')">🗑 Delete All Records</button>
+    </div>`;}).join('')}`;
+}
+function rptExpense(){
+  const{from,to}=getRptDates();const exps=DB.expenses.filter(e=>e.date>=from&&e.date<=to);
+  const total=exps.reduce((s,e)=>s+(+e.amount||0),0);
+  const byCat={};exps.forEach(e=>{const c=e.category||'General';byCat[c]=(byCat[c]||0)+(+e.amount||0);});
+  return `<div class="card-title">Expenses — ${from===to?from:from+' → '+to}</div>
+  <div class="g2" style="margin-bottom:12px">
+    <div class="metric"><div class="metric-lbl">Total Spent</div><div class="metric-val" style="color:var(--err)">${fmt(total)}</div></div>
+    <div class="metric"><div class="metric-lbl">Entries</div><div class="metric-val">${exps.length}</div></div>
+  </div>
+  ${Object.keys(byCat).length?`<div class="card-title">By Category</div>
+  <div class="tbl-wrap"><table class="tbl" style="margin-bottom:12px"><thead><tr><th>Category</th><th>Amount</th><th>%</th></tr></thead>
+  <tbody>${Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>`<tr><td><span class="badge b-gray">${cat}</span></td><td style="font-weight:600">${fmt(amt)}</td><td class="sm muted">${total?Math.round(amt/total*100):0}%</td></tr>`).join('')}</tbody></table></div>`:''}
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th></tr></thead>
+  <tbody>${exps.length?exps.map(e=>`<tr><td class="sm">${e.date}</td><td><span class="badge b-gray">${esc(e.category||'General')}</span></td><td>${esc(e.description||'—')}</td><td style="font-weight:600;color:var(--err)">${fmt(+e.amount||0)}</td></tr>`).join(''):`<tr><td colspan="4">${emptyEl('💸','No expenses','10px')}</td></tr>`}</tbody></table></div>`;
+}
+function rptProfit(){
+  const{from,to}=getRptDates();
+  const bills=DB.bills.filter(b=>b.date>=from&&b.date<=to);
+  const exps=DB.expenses.filter(e=>e.date>=from&&e.date<=to);
+  const vp=DB.vendorPayments.filter(p=>p.date>=from&&p.date<=to);
+  const revenue=bills.reduce((s,b)=>s+(+b.amountPaid||b.payableAmount),0);
+  const expTotal=exps.reduce((s,e)=>s+(+e.amount||0),0);
+  const vendorPaid=vp.reduce((s,p)=>s+(+p.amount||0),0);
+  const net=revenue-vendorPaid-expTotal;
+  return `<div class="card-title">Profit — ${from===to?from:from+' → '+to}</div>
+  <div class="g2" style="margin-bottom:12px">
+    <div class="metric"><div class="metric-lbl">Revenue</div><div class="metric-val" style="color:var(--ok)">${fmt(revenue)}</div></div>
+    <div class="metric"><div class="metric-lbl">Vendor Payments</div><div class="metric-val" style="color:var(--err)">${fmt(vendorPaid)}</div></div>
+    <div class="metric"><div class="metric-lbl">Expenses</div><div class="metric-val" style="color:var(--warn)">${fmt(expTotal)}</div></div>
+    <div class="metric"><div class="metric-lbl">Net ${net<0?'Loss':'Profit'}</div><div class="metric-val" style="color:${net>=0?'var(--ok)':'var(--err)'}">${fmt(Math.abs(net))}</div></div>
+  </div>
+  <div style="background:var(--bg);border-radius:var(--rs);padding:14px;font-size:13px">
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd)"><span>Revenue Collected</span><span style="color:var(--ok)">${fmt(revenue)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd)"><span>− Vendor Payments</span><span style="color:var(--err)">−${fmt(vendorPaid)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd)"><span>− Expenses</span><span style="color:var(--warn)">−${fmt(expTotal)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:700;font-size:15px"><span>Net ${net<0?'Loss':'Profit'}</span><span style="color:${net>=0?'var(--ok)':'var(--err)'}">${fmt(net)}</span></div>
+  </div>`;
+}
+function printRpt(){
+  const el=g('rptResult');if(!el||el.innerHTML.includes('Select a report'))return;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Report</title><style>body{font-family:Arial,sans-serif;font-size:13px;padding:20px}table{width:100%;border-collapse:collapse}th,td{padding:7px 10px;border-bottom:1px solid #eee;text-align:left}th{background:#f5f5f5;font-size:11px;text-transform:uppercase}.badge{padding:2px 8px;border-radius:20px;font-size:11px}@media print{button{display:none}}</style></head><body><h2>${SHOP_NAME}</h2><p style="color:#888;font-size:12px">Generated: ${new Date().toLocaleString()}</p><hr style="margin:10px 0">${el.innerHTML}<br><button onclick="window.print()">Print</button><\/body><\/html>`);
+  w.document.close();setTimeout(()=>w.print(),400);
+}
+async function deleteVendorRecord(vid){
+  if(!confirm('Delete ALL order and payment records for this vendor? Balance will reset.'))return;
+  try{
+    for(const o of DB.orders.filter(o=>o.vendorId===vid))await apiPost({action:'delOrder',id:o.id});
+    DB.orders=DB.orders.filter(o=>o.vendorId!==vid);
+    const v=DB.vendors.find(x=>x.id===vid);
+    if(v){v.balance=0;v.advanceBalance=0;await apiPost({action:'updVendor',id:vid,row:v});}
+    toast('Vendor records cleared','ok');renderRptResult();
+  }catch(e){toast(e.message,'err');}
+}
+async function deleteCustomerRecord(cid){
+  if(!confirm('Delete ALL bill and payment records for this customer? Balance will reset.'))return;
+  try{
+    for(const b of DB.bills.filter(b=>b.customerId===cid))await apiPost({action:'updBill',id:b.id,row:{...b,items:'[]',paymentStatus:'paid',amountPaid:b.payableAmount}});
+    DB.bills=DB.bills.filter(b=>b.customerId!==cid);
+    DB.customerPayments=DB.customerPayments.filter(p=>p.customerId!==cid);
+    const c=DB.customers.find(x=>x.id===cid);
+    if(c){c.outstanding=0;c.advanceBalance=0;await apiPost({action:'updCustomer',id:cid,row:c});}
+    toast('Customer records cleared','ok');renderRptResult();
+  }catch(e){toast(e.message,'err');}
+}
+
+/* ══════════════════════════════════════
+   ADMIN
+══════════════════════════════════════ */
+function pgAdmin(){
+  const isAdmin=CUR.user?.role==='admin';
+  const USERS=getUsers();
+  return `
+  <div class="cols-2">
+    <div class="card">
+      <div class="card-title">Supabase Connection</div>
+      <div class="f-group"><label class="f-label">Supabase Project URL</label><input class="f-ctrl" id="adUrl" value="${SB_URL||''}" placeholder="https://xyzxyz.supabase.co"/></div>
+      <div class="f-group"><label class="f-label">Supabase Anon Key</label><input class="f-ctrl" id="adKey" value="${SB_KEY||''}" placeholder="eyJhbGci…" style="font-size:11px"/></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="adminSaveUrl()">Save &amp; Reconnect</button>
+        <button class="btn" onclick="showHelp()">Setup Guide</button>
+        <button class="btn" onclick="useDemoMode();toast('Demo mode','ok');renderPage()">Demo Mode</button>
+      </div>
+      <div class="${DEMO?'alert alert-warn':'alert alert-ok'}" style="margin-top:12px">${DEMO?'⚠️ Demo mode — data not saved.':'✅ Connected to Supabase.'}</div>
+    </div>
+    <div class="card">
+      <div class="card-title">My Account</div>
+      <div class="f-group"><label class="f-label">Display Name</label><input class="f-ctrl" id="myName" value="${esc(CUR.user?.name||'')}"/></div>
+      <div class="f-group"><label class="f-label">Username</label><input class="f-ctrl" id="myUser" value="${esc(CUR.user?.u||'')}"/></div>
+      <div class="f-group"><label class="f-label">New Password <span class="muted">(blank = keep current)</span></label><input type="password" class="f-ctrl" id="myPass" placeholder="New password…"/></div>
+      <button class="btn btn-primary" onclick="updateMyAccount()">Save My Account</button>
+    </div>
+    ${isAdmin?`
+    <div class="card">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center"><span>User Management</span><button class="btn btn-sm btn-primary" onclick="showAddUserModal()">+ Add User</button></div>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Actions</th></tr></thead>
+        <tbody>${USERS.map(u=>`<tr><td class="mono">${u.u}</td><td>${u.name}</td><td><span class="badge b-${u.role==='admin'?'purple':'blue'}">${u.role}</span></td>
+        <td><div class="acts"><button class="btn btn-xs" onclick="showEditUserModal('${u.u}')">Edit</button>
+        ${u.u!==CUR.user?.u?`<button class="btn btn-xs btn-danger" onclick="deleteUser('${u.u}')">Del</button>`:'<span class="sm muted">You</span>'}</div></td></tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Data Summary</div>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Table</th><th>Records</th></tr></thead>
+      <tbody>${[['Products',DB.products.length],['Customers',DB.customers.length],['Bills',DB.bills.length],['Vendors',DB.vendors.length],['Orders',DB.orders.length],['Returns',DB.returns.length],['Vendor Payments',DB.vendorPayments.length],['Customer Payments',DB.customerPayments.length],['Expenses',DB.expenses.length]].map(([n,c])=>`<tr><td>${n}</td><td><strong>${c}</strong></td></tr>`).join('')}</tbody></table></div>
+    </div>`:''}
+    <div class="card">
+      <div class="card-title">Actions</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-primary" onclick="reloadData()">🔄 Reload from Supabase</button>
+        <button class="btn" onclick="if(confirm('Clear local cache?')){Object.keys(DB).forEach(k=>DB[k]=[]);renderPage();toast('Cleared','ok')}">🗑 Clear Local Cache</button>
+      </div>
+    </div>
+  </div>`;
+}
+function showAddUserModal(){
+  showModal(`<div class="modal-hd"><div class="modal-title">Add New User</div><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="f-group"><label class="f-label">Full Name *</label><input class="f-ctrl" id="nuName" placeholder="e.g. Ahmed Khan"/></div>
+    <div class="f-group"><label class="f-label">Username *</label><input class="f-ctrl" id="nuUser" placeholder="e.g. ahmed"/></div>
+    <div class="f-group"><label class="f-label">Password *</label><input type="password" class="f-ctrl" id="nuPass"/></div>
+    <div class="f-group"><label class="f-label">Role</label><select class="f-ctrl" id="nuRole"><option value="cashier">Cashier</option><option value="admin">Admin</option></select></div>
+    <button class="btn btn-primary btn-block" onclick="addUser()">Add User</button>`);
+}
+function addUser(){
+  const name=val('nuName'),u=val('nuUser'),p=g('nuPass')?.value,role=val('nuRole');
+  if(!name||!u||!p){toast('Fill all fields','warn');return;}
+  const USERS=getUsers();
+  if(USERS.find(x=>x.u===u)){toast('Username already exists','warn');return;}
+  USERS.push({u,p,role,name});saveUsers(USERS);toast('User added','ok');closeModal();renderPage();
+}
+function showEditUserModal(username){
+  const USERS=getUsers();const user=USERS.find(x=>x.u===username);if(!user)return;
+  showModal(`<div class="modal-hd"><div class="modal-title">Edit — ${esc(user.name)}</div><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="f-group"><label class="f-label">Full Name</label><input class="f-ctrl" id="euName" value="${esc(user.name)}"/></div>
+    <div class="f-group"><label class="f-label">Username</label><input class="f-ctrl" id="euUser" value="${esc(user.u)}"/></div>
+    <div class="f-group"><label class="f-label">New Password <span class="muted">(blank = keep)</span></label><input type="password" class="f-ctrl" id="euPass"/></div>
+    <div class="f-group"><label class="f-label">Role</label><select class="f-ctrl" id="euRole"><option value="cashier" ${user.role==='cashier'?'selected':''}>Cashier</option><option value="admin" ${user.role==='admin'?'selected':''}>Admin</option></select></div>
+    <button class="btn btn-primary btn-block" onclick="editUser('${username}')">Save Changes</button>`);
+}
+function editUser(oldU){
+  const USERS=getUsers();const idx=USERS.findIndex(x=>x.u===oldU);if(idx<0)return;
+  const newU=val('euUser'),newName=val('euName'),newP=g('euPass')?.value,newRole=val('euRole');
+  if(!newU||!newName){toast('Name and username required','warn');return;}
+  if(newU!==oldU&&USERS.find(x=>x.u===newU)){toast('Username taken','warn');return;}
+  USERS[idx]={u:newU,name:newName,p:newP||USERS[idx].p,role:newRole};saveUsers(USERS);
+  if(CUR.user?.u===oldU){CUR.user=USERS[idx];localStorage.setItem('utpos_session',JSON.stringify(CUR.user));g('sNm').textContent=CUR.user.name;g('sAv').textContent=CUR.user.name.charAt(0).toUpperCase();}
+  toast('Updated','ok');closeModal();renderPage();
+}
+function deleteUser(username){
+  if(!confirm('Delete user: '+username+'?'))return;
+  const USERS=getUsers();const updated=USERS.filter(x=>x.u!==username);
+  if(updated.length===0){toast('Cannot delete last user','warn');return;}
+  saveUsers(updated);toast('Deleted','ok');renderPage();
+}
+function updateMyAccount(){
+  const name=val('myName'),u=val('myUser'),p=g('myPass')?.value;
+  if(!name||!u){toast('Name and username required','warn');return;}
+  const USERS=getUsers();const idx=USERS.findIndex(x=>x.u===CUR.user?.u);
+  if(idx<0){toast('User not found','err');return;}
+  if(u!==CUR.user?.u&&USERS.find(x=>x.u===u)){toast('Username taken','warn');return;}
+  USERS[idx]={...USERS[idx],name,u,p:p||USERS[idx].p};saveUsers(USERS);
+  CUR.user=USERS[idx];localStorage.setItem('utpos_session',JSON.stringify(CUR.user));
+  g('sNm').textContent=name;g('sAv').textContent=name.charAt(0).toUpperCase();
+  toast('Account updated','ok');renderPage();
+}
+function adminSaveUrl(){
+  const url=val('adUrl');const key=val('adKey');
+  if(!url.startsWith('https')||!key){toast('Enter both URL and Anon Key','warn');return;}
+  SB_URL=url.replace(/\/$/,'');SB_KEY=key;
+  localStorage.setItem('utpos_sb_url',SB_URL);localStorage.setItem('utpos_sb_key',SB_KEY);
+  localStorage.removeItem('utpos_demo');DEMO=false;toast('Saved! Reloading…','ok');loadAll().then(()=>{refreshTopbar();renderPage();});
+}
+async function reloadData(){g('pageArea').innerHTML='<div class="loading"><div class="spinner"></div>&nbsp;Reloading…</div>';await loadAll();refreshTopbar();renderPage();toast('Data reloaded','ok');}
+
+/* ════════════════════════════════════════
+   BARCODE SCANNER (ZXing via CDN)
+════════════════════════════════════════ */
+let _scannerCtx=null;
+let _scannerStream=null;
+let _scannerReader=null;
+let _scannerActive=false;
+let _torchOn=false;
+let _facingMode='environment';
+let _zxingLoaded=false;
+
+function loadZXing(){
+  return new Promise((resolve,reject)=>{
+    if(_zxingLoaded&&window.ZXing){resolve();return;}
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/@zxing/library@0.21.1/umd/index.min.js';
+    s.onload=()=>{_zxingLoaded=true;resolve();};
+    s.onerror=()=>reject(new Error('Failed to load scanner library'));
+    document.head.appendChild(s);
+  });
+}
+
+async function openScanner(ctx){
+  _scannerCtx=ctx;
+  const modal=g('scannerModal');if(!modal)return;
+  modal.classList.remove('hidden');
+  g('scannerStatus').textContent='Loading scanner…';
+  const res=g('scannerResult');if(res)res.classList.remove('show');
+  try{await loadZXing();await startCamera();}
+  catch(e){g('scannerStatus').textContent='Camera error: '+e.message;toast('Camera error: '+e.message,'err');}
+}
+
+async function startCamera(){
+  if(_scannerStream){_scannerStream.getTracks().forEach(t=>t.stop());_scannerStream=null;}
+  if(_scannerReader){try{_scannerReader.reset();}catch(e){}}_scannerReader=null;
+  _scannerActive=true;
+  const video=g('scannerVideo');
+  try{
+    _scannerStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:_facingMode,width:{ideal:1280},height:{ideal:720}}});
+    video.srcObject=_scannerStream;await video.play();
+    g('scannerStatus').textContent='Camera ready — scanning…';
+    startDecoding();
+  }catch(e){
+    if(e.name==='NotAllowedError'){g('scannerStatus').textContent='Camera permission denied';toast('Allow camera access to scan barcodes','warn');}
+    else{g('scannerStatus').textContent='Camera unavailable';toast('Could not access camera','err');}
+  }
+}
+
+function startDecoding(){
+  if(!window.ZXing)return;
+  const video=g('scannerVideo');
+  const hints=new Map();
+  const formats=[ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.CODE_128,ZXing.BarcodeFormat.CODE_39,ZXing.BarcodeFormat.QR_CODE,ZXing.BarcodeFormat.UPC_A,ZXing.BarcodeFormat.UPC_E,ZXing.BarcodeFormat.ITF,ZXing.BarcodeFormat.DATA_MATRIX];
+  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,formats);
+  hints.set(ZXing.DecodeHintType.TRY_HARDER,true);
+  _scannerReader=new ZXing.BrowserMultiFormatReader(hints,500);
+  _scannerReader.decodeFromVideoElement(video,(result,err)=>{
+    if(!_scannerActive)return;
+    if(result)onBarcodeDetected(result.getText());
+  });
+}
+
+function onBarcodeDetected(code){
+  if(navigator.vibrate)navigator.vibrate([100,50,100]);
+  const res=g('scannerResult');const txt=g('scannerResultText');
+  if(_scannerCtx==='billing'){
+    const prod=DB.products.find(p=>String(p.barcode)===String(code));
+    if(prod){
+      CUR.selProd=prod;closeScanner();renderPage();toast('Found: '+prod.name,'ok');
+    }else{
+      if(txt)txt.textContent='❌ Not found: '+code;if(res)res.classList.add('show');
+      const inp=g('pSrch');if(inp){inp.value=code;doPSrch(code);}
+      setTimeout(()=>{if(res)res.classList.remove('show');},2500);
+    }
+  }else if(_scannerCtx==='inventory_barcode'){
+    if(txt)txt.textContent='✅ '+code;if(res)res.classList.add('show');
+    const inp=g('pB');if(inp)inp.value=code;
+    setTimeout(()=>closeScanner(),800);
+    toast('Barcode: '+code,'ok');
+  }else if(_scannerCtx==='returns'){
+    if(txt)txt.textContent='✅ '+code;if(res)res.classList.add('show');
+    const prod=DB.products.find(p=>String(p.barcode)===String(code));
+    const inp=g('rPI');if(inp){inp.value=prod?prod.name:code;}
+    setTimeout(()=>closeScanner(),800);
+  }
+}
+
+function closeScanner(){
+  _scannerActive=false;
+  if(_scannerReader){try{_scannerReader.reset();}catch(e){}}_scannerReader=null;
+  if(_scannerStream){_scannerStream.getTracks().forEach(t=>t.stop());_scannerStream=null;}
+  _torchOn=false;
+  const modal=g('scannerModal');if(modal)modal.classList.add('hidden');
+  const video=g('scannerVideo');if(video)video.srcObject=null;
+}
+
+async function toggleTorch(){
+  if(!_scannerStream)return;
+  const track=_scannerStream.getVideoTracks()[0];if(!track)return;
+  try{
+    const caps=track.getCapabilities();
+    if(!caps.torch){toast('Torch not supported on this device','warn');return;}
+    _torchOn=!_torchOn;
+    await track.applyConstraints({advanced:[{torch:_torchOn}]});
+    const btn=g('torchBtn');if(btn)btn.style.background=_torchOn?'rgba(255,220,0,.3)':'rgba(255,255,255,.1)';
+  }catch(e){toast('Torch not available','warn');}
+}
+
+async function switchCamera(){
+  _facingMode=_facingMode==='environment'?'user':'environment';
+  try{await startCamera();}catch(e){toast('Could not switch camera','err');}
+}
+
+/* ════════════════════════════════════════
+   PWA — Manifest, Service Worker, Install
+════════════════════════════════════════ */
+function initPWA(){
+  generateIcon();
+  injectManifest();
+  registerSW();
+  setupInstallPrompt();
+  setupOfflineDetection();
+}
+
+function generateIcon(){
+  // Draw app icon on canvas and use as favicon + apple-touch-icon
+  const canvas=document.createElement('canvas');
+  canvas.width=512;canvas.height=512;
+  const ctx=canvas.getContext('2d');
+  // Background
+  const grad=ctx.createLinearGradient(0,0,512,512);
+  grad.addColorStop(0,'#1e1b4b');grad.addColorStop(1,'#4f46e5');
+  ctx.fillStyle=grad;
+  roundRect(ctx,0,0,512,512,80);ctx.fill();
+  // House icon
+  ctx.strokeStyle='#fff';ctx.lineWidth=28;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.beginPath();
+  ctx.moveTo(100,250);ctx.lineTo(256,120);ctx.lineTo(412,250);
+  ctx.moveTo(140,250);ctx.lineTo(140,400);ctx.lineTo(372,400);ctx.lineTo(372,250);
+  ctx.moveTo(210,400);ctx.lineTo(210,320);ctx.lineTo(302,320);ctx.lineTo(302,400);
+  ctx.stroke();
+  // "POS" text
+  ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font='bold 60px Arial';ctx.textAlign='center';
+  ctx.fillText('POS',256,470);
+  const dataUrl=canvas.toDataURL('image/png');
+  const favicon=document.getElementById('faviconIcon');
+  const apple=document.getElementById('appleTouchIcon');
+  if(favicon)favicon.href=dataUrl;
+  if(apple)apple.href=dataUrl;
+  window._appIconUrl=dataUrl;
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+}
+
+function injectManifest(){
+  const icon=window._appIconUrl||'';
+  const manifest={
+    name:'U-Tech-POS ® — NAWAB BAKERS AND MOBILE',
+    short_name:'U-Tech-POS',
+    description:'Point of Sale System for NAWAB BAKERS AND MOBILE',
+    start_url:window.location.href,
+    scope:window.location.href,
+    display:'standalone',
+    orientation:'any',
+    background_color:'#1e1b4b',
+    theme_color:'#1e1b4b',
+    icons:[
+      {src:icon,sizes:'192x192',type:'image/png',purpose:'any maskable'},
+      {src:icon,sizes:'512x512',type:'image/png',purpose:'any maskable'}
+    ],
+    categories:['business','productivity'],
+    shortcuts:[
+      {name:'New Bill',short_name:'Bill',description:'Create a new bill',url:window.location.href+'#billing'},
+      {name:'Inventory',short_name:'Stock',description:'View inventory',url:window.location.href+'#inventory'}
+    ]
+  };
+  const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
+  const url=URL.createObjectURL(blob);
+  const link=document.getElementById('pwaManifest');
+  if(link)link.href=url;
+}
+
+function registerSW(){
+  if(!('serviceWorker' in navigator))return;
+  // Only register on real deployed domain — skip on Claude preview, localhost, etc.
+  const host=location.hostname;
+  const isProduction=!host.includes('claudeusercontent')&&!host.includes('localhost')&&!host.includes('127.0.0.1')&&host!=='';
+  if(!isProduction)return; // silent skip — no console log, no warning
+  navigator.serviceWorker.register('/sw.js',{scope:'/'})
+    .then(reg=>{
+      reg.addEventListener('updatefound',()=>{
+        const sw=reg.installing;
+        sw.addEventListener('statechange',()=>{
+          if(sw.state==='installed'&&navigator.serviceWorker.controller)showUpdateToast();
+        });
+      });
+    })
+    .catch(()=>{}); // silent fail
+}
+
+function showUpdateToast(){
+  const t=document.createElement('div');
+  t.className='toast toast-info';
+  t.style.cssText='min-width:280px;display:flex;align-items:center;justify-content:space-between;gap:12px';
+  t.innerHTML=`<span>🔄 Update available</span><button onclick="location.reload()" style="background:#4f46e5;color:#fff;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600">Reload</button>`;
+  g('toastWrap').appendChild(t);
+}
+
+let _installPrompt=null;
+function setupInstallPrompt(){
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();
+    _installPrompt=e;
+    // Show banner after 3 seconds if not dismissed before
+    const dismissed=localStorage.getItem('utpos_pwa_dismissed');
+    if(!dismissed){
+      setTimeout(()=>{
+        const banner=g('pwaBanner');
+        if(banner)banner.classList.remove('hidden');
+      },3000);
+    }
+  });
+  window.addEventListener('appinstalled',()=>{
+    const banner=g('pwaBanner');if(banner)banner.classList.add('hidden');
+    _installPrompt=null;
+    toast('U-Tech-POS installed successfully! 🎉','ok');
+    localStorage.setItem('utpos_pwa_dismissed','yes');
+  });
+}
+async function installPWA(){
+  if(!_installPrompt){
+    // Fallback: show manual install instructions
+    showManualInstall();return;
+  }
+  _installPrompt.prompt();
+  const{outcome}=await _installPrompt.userChoice;
+  if(outcome==='accepted'){const b=g('pwaBanner');if(b)b.classList.add('hidden');}
+  _installPrompt=null;
+}
+function dismissPWA(){
+  const b=g('pwaBanner');if(b)b.classList.add('hidden');
+  localStorage.setItem('utpos_pwa_dismissed','yes');
+}
+function showManualInstall(){
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isAndroid=/android/i.test(navigator.userAgent);
+  let msg='';
+  if(isIOS)msg=`<div style="font-size:13px;line-height:1.8"><strong>Install on iPhone / iPad:</strong><br>1. Tap the <strong>Share</strong> button (box with arrow up) in Safari<br>2. Scroll down and tap <strong>"Add to Home Screen"</strong><br>3. Tap <strong>Add</strong> — done!</div>`;
+  else if(isAndroid)msg=`<div style="font-size:13px;line-height:1.8"><strong>Install on Android:</strong><br>1. Tap the <strong>⋮ menu</strong> in Chrome<br>2. Tap <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong><br>3. Tap <strong>Install</strong> — done!</div>`;
+  else msg=`<div style="font-size:13px;line-height:1.8"><strong>Install on Desktop:</strong><br>Look for the <strong>install icon ⊕</strong> in your browser address bar and click it.<br><br>Or in Chrome: Menu → <strong>"Install U-Tech-POS"</strong></div>`;
+  showModal(`<div class="modal-hd"><div class="modal-title">📲 Install U-Tech-POS</div><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="alert alert-info" style="margin-bottom:16px">Installing adds U-Tech-POS to your home screen so it opens like a native app — full screen, offline support, no browser bar.</div>
+    ${msg}<button class="btn btn-primary btn-block" style="margin-top:16px" onclick="closeModal()">Got it!</button>`);
+}
+
+function setupOfflineDetection(){
+  const bar=g('offlineBar');
+  function update(){if(bar)bar.style.display=navigator.onLine?'none':'block';}
+  window.addEventListener('online',()=>{update();toast('Back online ✅','ok');});
+  window.addEventListener('offline',()=>{update();toast('You are offline','warn');});
+  update();
+}
+/* ── BOOT ── */
+window.addEventListener('DOMContentLoaded',()=>{
+  try{
+    document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!g('loginScreen').classList.contains('hidden'))doLogin();});
+
+    // Restore demo mode
+    try{if(localStorage.getItem('utpos_demo')==='1'){DEMO=true;seedDemo();}}catch(e){}
+
+    // Try to restore existing session (so refresh doesn't log out)
+    let sessionRestored=false;
+    try{
+      const savedSession=localStorage.getItem('utpos_session');
+      if(savedSession){
+        const user=JSON.parse(savedSession);
+        const USERS=getUsers();
+        const valid=USERS.find(x=>x.u===user.u&&x.p===user.p);
+        if(valid){
+          CUR.user=valid;
+          g('appShell').classList.remove('hidden');
+          g('sAv').textContent=valid.name.charAt(0).toUpperCase();
+          g('sNm').textContent=valid.name;
+          g('sRl').textContent=valid.role;
+          // Show loading immediately — don't wait for Supabase
+          g('pageArea').innerHTML='<div class="loading"><div class="spinner"></div>&nbsp;Loading data…</div>';
+          refreshTopbar();
+          loadAll()
+            .then(()=>{renderPage();refreshTopbar();})
+            .catch(()=>{renderPage();refreshTopbar();});
+          initPWA();
+          sessionRestored=true;
+        }
+      }
+    }catch(e){sessionRestored=false;}
+
+    if(!sessionRestored){
+      // Auto-save hardcoded credentials
+      try{
+        if(SB_URL&&!localStorage.getItem('utpos_sb_url')){
+          localStorage.setItem('utpos_sb_url',SB_URL);
+          localStorage.setItem('utpos_sb_key',SB_KEY);
+        }
+      }catch(e){}
+      // Show correct screen
+      if(SB_URL&&SB_KEY){
+        g('loginScreen').classList.remove('hidden');
+      } else if(DEMO){
+        g('loginScreen').classList.remove('hidden');
+      } else {
+        g('setupScreen').classList.remove('hidden');
+      }
+      initPWA();
+    }
+  }catch(err){
+    // Emergency fallback - always show login if anything fails
+    console.error('Boot error:',err);
+    try{g('loginScreen').classList.remove('hidden');}catch(e){}
+  }
+});
+
+
+/* ── EMERGENCY FALLBACK ── */
+// If after 300ms page is still blank, force correct screen visible
+setTimeout(()=>{
+  const allHidden=[g('setupScreen'),g('loginScreen'),g('appShell')].every(el=>!el||el.classList.contains('hidden'));
+  if(allHidden){
+    console.warn('Emergency: forcing screen visible');
+    if(CUR.user){
+      const pa=g('pageArea');
+      if(pa&&pa.innerHTML.trim()==='')pa.innerHTML='<div class="loading"><div class="spinner"></div>&nbsp;Loading…</div>';
+      g('appShell').classList.remove('hidden');
+    } else {
+      g('loginScreen').classList.remove('hidden');
+    }
+  }
+  // Also fix blank content area if app is showing but content is empty
+  if(CUR.user&&!g('appShell').classList.contains('hidden')){
+    const pa=g('pageArea');
+    if(pa&&pa.innerHTML.trim()===''){
+      renderPage();
+    }
+  }
+},500);
+
+
+</script>
+
+</body>
+</html>
