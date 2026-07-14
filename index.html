@@ -462,7 +462,7 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const normP=p=>({...p,qty:+p.qty||0,purchasePrice:+(p.purchasePrice||p['purchasePrice'])||0,sellingPrice:+(p.sellingPrice||p['sellingPrice'])||0,lowStockAlert:+(p.lowStockAlert||p['lowStockAlert'])||0});
 function normB(b){
   let items=b.items;
-  if(typeof items==='string'){try{items=JSON.parse(items);}catch{items=[];}}
+  if(typeof items==='string'){try{items=JSON.parse(items);}catch(e){console.warn('normB: could not parse bill items',e);items=[];}}
   if(!Array.isArray(items))items=[];
   return{...b,items,
     totalAmount:+b.totalAmount||0,
@@ -473,7 +473,7 @@ function normB(b){
 /* ── USERS (stored in localStorage, editable by admin) ── */
 function getUsers(){
   try{const u=localStorage.getItem('utpos_users');return u?JSON.parse(u):[{u:'admin',p:'admin123',role:'admin',name:'Admin'},{u:'cashier',p:'cashier123',role:'cashier',name:'Cashier'}];}
-  catch{return [{u:'admin',p:'admin123',role:'admin',name:'Admin'}];}
+  catch(e){console.warn('getUsers: could not parse stored users, using defaults',e);return [{u:'admin',p:'admin123',role:'admin',name:'Admin'}];}
 }
 function saveUsers(arr){localStorage.setItem('utpos_users',JSON.stringify(arr));}
 
@@ -504,13 +504,13 @@ function sbHeaders(prefer='return=representation'){
   };
 }
 async function apiGet(action){
-  const tbl=TBL[action];if(!tbl)return[];
+  const tbl=TBL[action];if(!tbl)throw new Error('Unknown action: '+action);
   try{
     const r=await fetch(`${SB_URL}/rest/v1/${tbl}?select=*`,{headers:sbHeaders()});
     if(!r.ok){const txt=await r.text();throw new Error(r.status+': '+txt.slice(0,100));}
     const data=await r.json();
     return Array.isArray(data)?data:[];
-  }catch(e){toast('DB: '+e.message,'err');return[];}
+  }catch(e){toast('DB: '+e.message,'err');throw e;}
 }
 async function apiPost({action,row,id}){
   // Determine table
@@ -546,16 +546,35 @@ async function apiPost({action,row,id}){
   }catch(e){toast('DB error: '+e.message,'err');throw e;}
 }
 async function loadAll(){
-  try{
-    const [pr,cu,bi,ve,or,re,vp,cp,ex]=await Promise.all([
-      apiGet('getProducts'),apiGet('getCustomers'),apiGet('getBills'),apiGet('getVendors'),
-      apiGet('getOrders'),apiGet('getReturns'),apiGet('getVendorPayments'),apiGet('getCustomerPayments'),
-      apiGet('getExpenses')
-    ]);
-    DB.products=(pr||[]).map(normP);DB.customers=cu||[];DB.bills=(bi||[]).map(normB);
-    DB.vendors=ve||[];DB.orders=or||[];DB.returns=re||[];
-    DB.vendorPayments=vp||[];DB.customerPayments=cp||[];DB.expenses=ex||[];
-  }catch(e){toast('Failed to load data','err');}
+  // Each table loads independently so one failure can't wipe the others.
+  const specs=[
+    {action:'getProducts',key:'products',norm:rows=>rows.map(normP)},
+    {action:'getCustomers',key:'customers'},
+    {action:'getBills',key:'bills',norm:rows=>rows.map(normB)},
+    {action:'getVendors',key:'vendors'},
+    {action:'getOrders',key:'orders'},
+    {action:'getReturns',key:'returns'},
+    {action:'getVendorPayments',key:'vendorPayments'},
+    {action:'getCustomerPayments',key:'customerPayments'},
+    {action:'getExpenses',key:'expenses'}
+  ];
+  const results=await Promise.allSettled(specs.map(s=>apiGet(s.action)));
+  const failed=[];
+  results.forEach((res,i)=>{
+    const s=specs[i];
+    if(res.status==='fulfilled'){
+      const rows=res.value||[];
+      DB[s.key]=s.norm?s.norm(rows):rows;
+    }else{
+      // Preserve whatever is already in memory for this table rather than blanking it.
+      failed.push(s.key);
+      console.error('loadAll: failed to load '+s.key,res.reason);
+    }
+  });
+  if(failed.length){
+    toast('Failed to load: '+failed.join(', '),'err');
+    throw new Error('Failed to load tables: '+failed.join(', '));
+  }
 }
 
 /* ── WA MODAL GLOBALS ── */
@@ -637,7 +656,8 @@ async function showApp(){
   g('appShell').classList.remove('hidden');
   g('pageArea').innerHTML='<div class="loading"><div class="spinner"></div>&nbsp;Loading data…</div>';
   refreshTopbar();
-  try{await loadAll();}catch(e){}
+  // loadAll surfaces its own toast/console error on failure; render whatever loaded.
+  try{await loadAll();}catch(e){console.error('showApp: data load incomplete',e);}
   renderPage();
   refreshTopbar();
 }
@@ -1867,7 +1887,7 @@ const DEFAULT_TPL={
   accentColor:'#4f46e5',
   layout:'thermal'
 };
-function getTpl(){try{return JSON.parse(localStorage.getItem('shopOS_tpl')||'null')||DEFAULT_TPL;}catch{return DEFAULT_TPL;}}
+function getTpl(){try{return JSON.parse(localStorage.getItem('shopOS_tpl')||'null')||DEFAULT_TPL;}catch(e){console.warn('getTpl: could not parse stored template, using default',e);return DEFAULT_TPL;}}
 function saveTpl(tpl){localStorage.setItem('shopOS_tpl',JSON.stringify(tpl));toast('Template saved','ok');renderPage();}
 
 function pgBillTemplate(){
@@ -2663,7 +2683,7 @@ function registerSW(){
         });
       });
     })
-    .catch(()=>{}); // silent fail
+    .catch(e=>{console.warn('Service worker registration failed:',e);});
 }
 
 function showUpdateToast(){
@@ -2752,12 +2772,12 @@ window.addEventListener('DOMContentLoaded',()=>{
           refreshTopbar();
           loadAll()
             .then(()=>{renderPage();refreshTopbar();})
-            .catch(()=>{renderPage();refreshTopbar();});
+            .catch(e=>{console.error('Session restore: data load incomplete',e);renderPage();refreshTopbar();});
           initPWA();
           sessionRestored=true;
         }
       }
-    }catch(e){sessionRestored=false;}
+    }catch(e){console.error('Session restore failed:',e);sessionRestored=false;}
 
     if(!sessionRestored){
       g('loginScreen').classList.remove('hidden');
