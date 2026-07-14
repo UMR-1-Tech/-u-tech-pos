@@ -448,27 +448,16 @@ create policy "allow all" on expenses for all using (true) with check (true);</t
   </div>
 </div>
 
+<script src="/pos-core.js"></script>
 <script>
 
 'use strict';
 
 /* ── HELPERS (must be first — used in state init) ── */
+/* esc, fmt, today, uid, normP, normB and other pure helpers live in
+   pos-core.js (loaded above) so they can be unit-tested in Node. */
 const g=id=>document.getElementById(id);
 const val=id=>(g(id)?.value||'').trim();
-const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const fmt=n=>'₨ '+Math.round(+n||0).toLocaleString();
-const today=()=>new Date().toISOString().slice(0,10);
-const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const normP=p=>({...p,qty:+p.qty||0,purchasePrice:+(p.purchasePrice||p['purchasePrice'])||0,sellingPrice:+(p.sellingPrice||p['sellingPrice'])||0,lowStockAlert:+(p.lowStockAlert||p['lowStockAlert'])||0});
-function normB(b){
-  let items=b.items;
-  if(typeof items==='string'){try{items=JSON.parse(items);}catch{items=[];}}
-  if(!Array.isArray(items))items=[];
-  return{...b,items,
-    totalAmount:+b.totalAmount||0,
-    payableAmount:+b.payableAmount||0,
-    amountPaid:+b.amountPaid||0};
-}
 
 /* ── USERS (stored in localStorage, editable by admin) ── */
 function getUsers(){
@@ -673,10 +662,7 @@ function refreshTopbar(){
 }
 
 /* ── BADGE HELPERS ── */
-function sBadge(s){return{paid:'<span class="badge b-green">Paid</span>',unpaid:'<span class="badge b-red">Unpaid</span>',partial:'<span class="badge b-amber">Partial</span>'}[s]||s;}
-function shBadge(s){return s==='Bakery'?'<span class="badge b-blue">Bakery</span>':'<span class="badge b-purple">Mobile</span>';}
-function muted(s){return `<span class="muted sm">${s}</span>`;}
-function emptyEl(ic,tx,p='32px'){return `<div class="empty" style="padding:${p}"><div class="empty-ic">${ic}</div><div class="empty-tx">${tx}</div></div>`;}
+/* sBadge, shBadge, muted, emptyEl live in pos-core.js (loaded above). */
 
 /* ── MODAL ── */
 function showModal(html,wide){
@@ -767,7 +753,7 @@ function pgDash(){
    BILLING
 ══════════════════════════════════════ */
 function pgBilling(){
-  const total=CUR.cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const total=cartTotal(CUR.cart);
   return `
   <div class="cols-3-2" style="align-items:start">
     <div>
@@ -863,21 +849,18 @@ function rmCart(i){CUR.cart.splice(i,1);renderPage();}
 
 async function completeBill(mode='save'){
   if(!CUR.cart.length){toast('Cart is empty','warn');return;}
-  const totalAmount=CUR.cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const totalAmount=cartTotal(CUR.cart);
   const payable=parseFloat(g('payableIn')?.value)||totalAmount;
-  let paid=payable;
-  if(CUR.payStatus==='unpaid')paid=0;
-  if(CUR.payStatus==='partial')paid=parseFloat(g('partialIn')?.value)||0;
+  const paid=computePaid(CUR.payStatus,payable,parseFloat(g('partialIn')?.value)||0);
   const bill={id:uid(),date:today(),customerId:CUR.billCust?.id||'walkin',customerName:CUR.billCust?.name||'Walk-in',customerType:CUR.billCustType,items:JSON.stringify(CUR.cart),totalAmount,payableAmount:payable,paymentMethod:CUR.payMethod,paymentStatus:CUR.payStatus,amountPaid:paid};
   try{
     await apiPost({action:'addBill',row:bill});
     const savedBill=normB({...bill,items:CUR.cart});DB.bills.push(savedBill);
     if(CUR.billCust){
       const due=payable-paid;
-      const adv=+CUR.billCust.advanceBalance||0;
       // Auto-apply advance credit if customer has it
-      let effectiveDue=due;let newAdv=adv;
-      if(adv>0&&due>0){const applying=Math.min(adv,due);effectiveDue=due-applying;newAdv=adv-applying;if(applying>0)toast(`${fmt(applying)} advance credit auto-applied!`,'ok');}
+      const{applying,effectiveDue,newAdvance:newAdv}=applyAdvance(due,+CUR.billCust.advanceBalance||0);
+      if(applying>0)toast(`${fmt(applying)} advance credit auto-applied!`,'ok');
       const uc={...CUR.billCust,totalBilled:(+CUR.billCust.totalBilled||0)+payable,outstanding:(+CUR.billCust.outstanding||0)+effectiveDue,advanceBalance:newAdv};
       await apiPost({action:'updCustomer',id:CUR.billCust.id,row:uc});
       const ci=DB.customers.findIndex(c=>c.id===CUR.billCust.id);if(ci>=0)DB.customers[ci]=uc;
@@ -1453,7 +1436,7 @@ function calcDiff(){
   const xp=xn?DB.products.find(p=>p.name.toLowerCase()===xn.toLowerCase()):null;
   if(g('rv'))g('rv').textContent=rp?fmt(rp.sellingPrice*rq):'—';
   if(g('xv'))g('xv').textContent=xp?fmt(xp.sellingPrice*xq):'—';
-  if(g('dv')&&rp&&xp){const d=(rp.sellingPrice*rq)-(xp.sellingPrice*xq);g('dv').textContent=fmt(Math.abs(d))+' '+(d>=0?'refund':'charge');}
+  if(g('dv')&&rp&&xp){const d=returnDiff(rp.sellingPrice,rq,xp.sellingPrice,xq);g('dv').textContent=fmt(Math.abs(d))+' '+(d>=0?'refund':'charge');}
 }
 async function applyReturnBillUpdate(){
   const custId=CUR.retCustId;
@@ -1463,14 +1446,8 @@ async function applyReturnBillUpdate(){
   const cust=DB.customers.find(c=>c.id===custId);
   const bill=DB.bills.find(b=>b.id===billId);
   if(!cust||!bill)return;
-  let newPaid=+bill.amountPaid||0;
-  let finalStatus=newStatus;
-  if(newStatus==='paid'){newPaid=bill.payableAmount;finalStatus='paid';}
-  else if(newStatus==='partial'){const pa=parseFloat(g('rBillPaid')?g('rBillPaid').value:'0')||0;newPaid=Math.min(pa,bill.payableAmount);finalStatus=newPaid>=bill.payableAmount?'paid':'partial';}
-  else if(newStatus==='unpaid'){newPaid=0;finalStatus='unpaid';}
-  const oldDue=bill.payableAmount-(+bill.amountPaid||0);
-  const newDue=bill.payableAmount-newPaid;
-  const dueDiff=oldDue-newDue;
+  const partialPaid=parseFloat(g('rBillPaid')?g('rBillPaid').value:'0')||0;
+  const{newPaid,finalStatus,dueDiff}=applyBillStatusChange(bill,newStatus,partialPaid);
   bill.amountPaid=newPaid;bill.paymentStatus=finalStatus;
   await apiPost({action:'updBill',id:billId,row:{...bill,items:JSON.stringify(Array.isArray(bill.items)?bill.items:[])}});
   const newOut=Math.max(0,(+cust.outstanding||0)-dueDiff);
@@ -1498,7 +1475,7 @@ async function doExchange(){
   const rq=parseInt(val('rQ'))||1,xq=parseInt(val('xQ'))||1;
   const rp=DB.products.find(p=>p.name.toLowerCase()===rn.toLowerCase());
   const xp=DB.products.find(p=>p.name.toLowerCase()===xn.toLowerCase());
-  const diff=(rp?rp.sellingPrice*rq:0)-(xp?xp.sellingPrice*xq:0);
+  const diff=returnDiff(rp?rp.sellingPrice:0,rq,xp?xp.sellingPrice:0,xq);
   const custId=CUR.retCustId||'';
   const cust=custId?DB.customers.find(c=>c.id===custId):null;
   const row={id:uid(),date:today(),customerName:cust?cust.name:'Walk-in',customerId:custId,returnedProduct:rn,returnedQty:rq,reason:val('rR'),returnType:'exchange',newProduct:xn,newQty:xq,priceDiff:diff};
@@ -1614,7 +1591,7 @@ function pgVendors(){
   </div>`;
 }
 function selV(id){CUR.selVendor=id;renderPage();}
-function openWA(phone){let c=phone.replace(/[^0-9]/g,'');if(c.startsWith('0'))c='92'+c.slice(1);window.open('https://wa.me/'+c,'_blank');}
+function openWA(phone){window.open('https://wa.me/'+whatsAppNumber(phone),'_blank');}
 
 async function saveVendorPay(vpId,vId){
   const vp=DB.vendorPayments.find(x=>x.id===vpId);
@@ -2178,11 +2155,7 @@ function pgReports(){
 function setRpt(k,v){if(k==='type'){CUR.rptType=v;CUR.rptVendors=[];CUR.rptCustomers=[];}if(k==='period')CUR.rptPeriod=v;renderPage();}
 function toggleRptSel(kind,id){const arr=kind==='vendor'?CUR.rptVendors:CUR.rptCustomers;const i=arr.indexOf(id);i>=0?arr.splice(i,1):arr.push(id);}
 function getRptDates(){
-  const td=today();
-  if(CUR.rptPeriod==='daily')return{from:td,to:td};
-  if(CUR.rptPeriod==='weekly'){const d=new Date();d.setDate(d.getDate()-6);return{from:d.toISOString().slice(0,10),to:td};}
-  if(CUR.rptPeriod==='monthly')return{from:td.slice(0,7)+'-01',to:td};
-  return{from:CUR.rptFrom||td,to:CUR.rptTo||td};
+  return rptDateRange(CUR.rptPeriod,{from:CUR.rptFrom,to:CUR.rptTo},today());
 }
 function renderRptResult(){
   const el=g('rptResult');if(!el)return;
@@ -2191,9 +2164,7 @@ function renderRptResult(){
 }
 function rptSales(){
   const{from,to}=getRptDates();const bills=DB.bills.filter(b=>b.date>=from&&b.date<=to);
-  const total=bills.reduce((s,b)=>s+b.payableAmount,0);
-  const collected=bills.reduce((s,b)=>s+(+b.amountPaid||0),0);
-  const pending=total-collected;
+  const{billed:total,collected,pending}=salesTotals(bills);
   return `<div class="card-title">Sales — ${from===to?from:from+' → '+to}</div>
   <div class="g2" style="margin-bottom:12px">
     <div class="metric"><div class="metric-lbl">Billed</div><div class="metric-val">${fmt(total)}</div></div>
@@ -2205,14 +2176,13 @@ function rptSales(){
   <tbody>${bills.length?bills.map(b=>`<tr><td class="sm">${b.date}</td><td>${esc(b.customerName)}</td><td>${fmt(b.payableAmount)}</td><td>${fmt(+b.amountPaid||0)}</td><td>${sBadge(b.paymentStatus)}</td></tr>`).join(''):`<tr><td colspan="5">${emptyEl('📄','No bills','10px')}</td></tr>`}</tbody></table></div>`;
 }
 function rptStock(){
-  const low=DB.products.filter(p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert);
-  const out=DB.products.filter(p=>p.qty===0);
+  const{count,low,out,stockValue}=stockTotals(DB.products);
   return `<div class="card-title">Stock Report</div>
   <div class="g2" style="margin-bottom:12px">
-    <div class="metric"><div class="metric-lbl">Products</div><div class="metric-val">${DB.products.length}</div></div>
-    <div class="metric"><div class="metric-lbl">Low Stock</div><div class="metric-val" style="color:var(--warn)">${low.length}</div></div>
-    <div class="metric"><div class="metric-lbl">Out of Stock</div><div class="metric-val" style="color:var(--err)">${out.length}</div></div>
-    <div class="metric"><div class="metric-lbl">Stock Value</div><div class="metric-val">${fmt(DB.products.reduce((s,p)=>s+p.qty*p.purchasePrice,0))}</div></div>
+    <div class="metric"><div class="metric-lbl">Products</div><div class="metric-val">${count}</div></div>
+    <div class="metric"><div class="metric-lbl">Low Stock</div><div class="metric-val" style="color:var(--warn)">${low}</div></div>
+    <div class="metric"><div class="metric-lbl">Out of Stock</div><div class="metric-val" style="color:var(--err)">${out}</div></div>
+    <div class="metric"><div class="metric-lbl">Stock Value</div><div class="metric-val">${fmt(stockValue)}</div></div>
   </div>
   <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Product</th><th>Shop</th><th>Qty</th><th>Buy ₨</th><th>Sell ₨</th><th>Value</th></tr></thead>
   <tbody>${DB.products.map(p=>`<tr><td><strong>${esc(p.name)}</strong></td><td>${shBadge(p.shop)}</td>
@@ -2287,8 +2257,7 @@ function rptCustomer(){
 }
 function rptExpense(){
   const{from,to}=getRptDates();const exps=DB.expenses.filter(e=>e.date>=from&&e.date<=to);
-  const total=exps.reduce((s,e)=>s+(+e.amount||0),0);
-  const byCat={};exps.forEach(e=>{const c=e.category||'General';byCat[c]=(byCat[c]||0)+(+e.amount||0);});
+  const{total,byCat}=expenseByCategory(exps);
   return `<div class="card-title">Expenses — ${from===to?from:from+' → '+to}</div>
   <div class="g2" style="margin-bottom:12px">
     <div class="metric"><div class="metric-lbl">Total Spent</div><div class="metric-val" style="color:var(--err)">${fmt(total)}</div></div>
@@ -2305,10 +2274,7 @@ function rptProfit(){
   const bills=DB.bills.filter(b=>b.date>=from&&b.date<=to);
   const exps=DB.expenses.filter(e=>e.date>=from&&e.date<=to);
   const vp=DB.vendorPayments.filter(p=>p.date>=from&&p.date<=to);
-  const revenue=bills.reduce((s,b)=>s+(+b.amountPaid||b.payableAmount),0);
-  const expTotal=exps.reduce((s,e)=>s+(+e.amount||0),0);
-  const vendorPaid=vp.reduce((s,p)=>s+(+p.amount||0),0);
-  const net=revenue-vendorPaid-expTotal;
+  const{revenue,expTotal,vendorPaid,net}=profitTotals(bills,exps,vp);
   return `<div class="card-title">Profit — ${from===to?from:from+' → '+to}</div>
   <div class="g2" style="margin-bottom:12px">
     <div class="metric"><div class="metric-lbl">Revenue</div><div class="metric-val" style="color:var(--ok)">${fmt(revenue)}</div></div>

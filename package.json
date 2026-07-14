@@ -1,0 +1,15 @@
+{
+  "name": "u-tech-pos",
+  "version": "1.0.0",
+  "private": true,
+  "description": "U-Tech-POS — offline-first POS for NAWAB BAKERS AND MOBILE",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.9",
+    "vitest": "^2.1.9"
+  }
+}

@@ -8,7 +8,7 @@ const CACHE = 'utpos-v3';
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => c.addAll(['/', '/index.html']).catch(() => {}))
+      .then(c => c.addAll(['/', '/index.html', '/pos-core.js']).catch(() => {}))
       .then(() => self.skipWaiting())
   );
 });
