@@ -493,6 +493,18 @@ const TBL={
   getExpenses:'expenses'
 };
 
+/* ── SHARED UTILITIES (deduplicated helpers) ── */
+const PAGE_TITLES={dashboard:'Dashboard',billing:'New Bill',inventory:'Inventory',customers:'Customers',returns:'Returns',vendors:'Vendors',payments:'Payment History',expenses:'Daily Expenses',reports:'Reports',billtemplate:'Bill Template',admin:'Admin Panel'};
+const billItems=b=>Array.isArray(b?.items)?b.items:[];
+const billDue=b=>b.payableAmount-(+b.amountPaid||0);
+const billSaveRow=(bill,extra={})=>({...bill,items:JSON.stringify(billItems(bill)),...extra});
+const isLowStock=p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert;
+const lowStockProducts=()=>DB.products.filter(isLowStock);
+const expiringSoonProducts=()=>DB.products.filter(p=>{if(!p.expiryDate)return false;const d=(new Date(p.expiryDate)-new Date())/864e5;return d>0&&d<=60;});
+const payTypeBadge=p=>p.paymentType==='advance'?'<span class="adv-badge">Advance</span>':'<span class="badge b-gray">Regular</span>';
+const normPhone=p=>{let n=String(p||'').replace(/[^0-9]/g,'');if(n.startsWith('0'))n='92'+n.slice(1);return n;};
+function openWhatsApp(phone,msg){const num=normPhone(phone);if(!num)return false;window.open('https://wa.me/'+num+(msg?'?text='+encodeURIComponent(msg):''),'_blank');return true;}
+
 /* ── SUPABASE API ── */
 function sbHeaders(prefer='return=representation'){
   return {
@@ -647,8 +659,7 @@ function nav(page,el){
   CUR.page=page;
   document.querySelectorAll('.nav-link').forEach(x=>x.classList.remove('active'));
   el.classList.add('active');
-  const titles={dashboard:'Dashboard',billing:'New Bill',inventory:'Inventory',customers:'Customers',returns:'Returns',vendors:'Vendors',payments:'Payment History',expenses:'Daily Expenses',reports:'Reports',billtemplate:'Bill Template',admin:'Admin Panel'};
-  g('tbTitle').textContent=titles[page]||page;
+  g('tbTitle').textContent=PAGE_TITLES[page]||page;
   renderPage();
 }
 function renderPage(){
@@ -656,12 +667,12 @@ function renderPage(){
   const fn=fns[CUR.page];if(fn)g('pageArea').innerHTML=fn();
   if(CUR.page==='billtemplate'){_tplLayout=getTpl().layout;setTimeout(initTplListeners,50);}
 }
-function goPage(page){document.querySelectorAll('.nav-link').forEach(x=>x.classList.toggle('active',x.dataset.p===page));CUR.page=page;const titles={dashboard:'Dashboard',billing:'New Bill',inventory:'Inventory',customers:'Customers',returns:'Returns',vendors:'Vendors',payments:'Payment History',expenses:'Daily Expenses',reports:'Reports',billtemplate:'Bill Template',admin:'Admin Panel'};g('tbTitle').textContent=titles[page]||page;renderPage();}
+function goPage(page){document.querySelectorAll('.nav-link').forEach(x=>x.classList.toggle('active',x.dataset.p===page));CUR.page=page;g('tbTitle').textContent=PAGE_TITLES[page]||page;renderPage();}
 
 /* ── TOPBAR ── */
 function refreshTopbar(){
-  const low=DB.products.filter(p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert);
-  const exp=DB.products.filter(p=>{if(!p.expiryDate)return false;const d=(new Date(p.expiryDate)-new Date())/864e5;return d>0&&d<=60;});
+  const low=lowStockProducts();
+  const exp=expiringSoonProducts();
   const td=today();
   const visits=DB.orders.filter(o=>o.nextVendorVisit===td&&o.status!=='paid');
   let h='';
@@ -704,8 +715,8 @@ function pgDash(){
   const todSales=todBills.reduce((s,b)=>s+(b.paymentStatus==='paid'?b.payableAmount:+b.amountPaid||0),0);
   const unpaid=DB.bills.filter(b=>b.paymentStatus!=='paid').length;
   const dues=DB.customers.reduce((s,c)=>s+(+c.outstanding||0),0);
-  const low=DB.products.filter(p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert);
-  const exp=DB.products.filter(p=>{if(!p.expiryDate)return false;const d=(new Date(p.expiryDate)-new Date())/864e5;return d>0&&d<=60;});
+  const low=lowStockProducts();
+  const exp=expiringSoonProducts();
   const todVisits=DB.orders.filter(o=>o.nextVendorVisit===td&&o.status!=='paid');
   const todDeliveries=DB.orders.filter(o=>o.deliveryDate===td&&o.status!=='paid');
   const recent=[...DB.bills].reverse().slice(0,6);
@@ -891,7 +902,7 @@ async function completeBill(mode='save'){
 
 function printBill(bill,sendWA=false){printBillWithTpl(bill,getTpl(),sendWA);}
 function printBillWithTpl(bill,tpl,sendWA=false){
-  const items=Array.isArray(bill.items)?bill.items:[];
+  const items=billItems(bill);
   const accent=tpl.accentColor||'#4f46e5';
   const maxW=tpl.paperSize==='58mm'?'220px':tpl.paperSize==='80mm'?'320px':tpl.paperSize==='half'?'420px':'680px';
   const fs=tpl.fontSize||'13px';
@@ -994,9 +1005,7 @@ function printBillWithTpl(bill,tpl,sendWA=false){
   if(!sendWA){setTimeout(()=>win.print(),600);}
   else{
     const msg=`*${tpl.shopName||SHOP_NAME} — Receipt*\nDate: ${bill.date}\nCustomer: ${bill.customerName}\n\n${items.map(i=>`${i.name} ×${i.qty} = ₨${i.price*i.qty}`).join('\n')}\n\n*Total Payable: ₨${bill.payableAmount}*\nPaid: ₨${bill.amountPaid}\nStatus: ${bill.paymentStatus}\n\n${tpl.footerNote||'Thank you!'}`;
-    const phone=CUR.billCust?.phone||'';
-    let num=phone.replace(/[^0-9]/g,'');if(num.startsWith('0'))num='92'+num.slice(1);
-    setTimeout(()=>{win.print();if(num)window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');},600);
+    setTimeout(()=>{win.print();openWhatsApp(CUR.billCust?.phone,msg);},600);
   }
 }
 
@@ -1023,7 +1032,7 @@ function pgInventory(){
       <thead><tr><th>Product</th><th>Barcode</th><th>Shop</th><th>Stock</th><th>Buy ₨</th><th>Sell ₨</th><th>Expiry</th><th>Actions</th></tr></thead>
       <tbody>${pr.length?pr.map(p=>{
         const max=Math.max(p.lowStockAlert*3,20,p.qty);const pct=Math.min(100,Math.round(p.qty/max*100));
-        const isLow=p.lowStockAlert>0&&p.qty<=p.lowStockAlert;
+        const isLow=isLowStock(p);
         const cls=isLow?'sf-low':pct<40?'sf-warn':'sf-ok';
         const ed=p.expiryDate?new Date(p.expiryDate):null;
         const expired=ed&&ed<new Date();const expiring=ed&&!expired&&ed<=cut;
@@ -1151,8 +1160,8 @@ function pgCustomers(profileId){
           ${pending.length?`<div class="tbl-wrap"><table class="tbl">
             <thead><tr><th>Date</th><th>Items</th><th>Total</th><th>Paid</th><th>Due</th><th>Status</th><th></th></tr></thead>
             <tbody>${pending.map(b=>{
-              const items=Array.isArray(b.items)?b.items:[];
-              const due=b.payableAmount-(+b.amountPaid||0);
+              const items=billItems(b);
+              const due=billDue(b);
               return `<tr>
                 <td class="sm">${b.date}</td>
                 <td class="sm">${items.map(i=>`${i.name} ×${i.qty}`).join(', ')||'—'}</td>
@@ -1266,8 +1275,8 @@ function showCustPayModal(custId){
     ${adv>0?`<div class="alert alert-ok" style="margin-bottom:12px">✅ Customer has <strong>${fmt(adv)}</strong> advance credit on account.</div>`:''}
     ${pending.length?`<div style="margin-bottom:14px">
       <div class="card-title">Pending Bills</div>
-      ${pending.map(b=>{const due=b.payableAmount-(+b.amountPaid||0);return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd)">
-        <div class="sm bold">${b.date} — ${(Array.isArray(b.items)?b.items:[]).map(i=>i.name).join(', ')}</div>
+      ${pending.map(b=>{const due=billDue(b);return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd)">
+        <div class="sm bold">${b.date} — ${billItems(b).map(i=>i.name).join(', ')}</div>
         <div class="sm bold" style="color:var(--err);white-space:nowrap">Due: ${fmt(due)}</div>
       </div>`;}).join('')}
     </div>`:'<div class="alert alert-ok">No pending bills.</div>'}
@@ -1303,12 +1312,12 @@ async function recordCustPayment(custId){
       const pending=DB.bills.filter(b=>b.customerId===custId&&b.paymentStatus!=='paid').sort((a,b)=>a.date>b.date?1:-1);
       for(const bill of pending){
         if(remaining<=0)break;
-        const due=bill.payableAmount-(+bill.amountPaid||0);
+        const due=billDue(bill);
         const applying=Math.min(remaining,due);
         bill.amountPaid=(+bill.amountPaid||0)+applying;
         bill.paymentStatus=bill.amountPaid>=bill.payableAmount?'paid':'partial';
         remaining-=applying;
-        await apiPost({action:'updBill',id:bill.id,row:{...bill,items:JSON.stringify(Array.isArray(bill.items)?bill.items:[])}});
+        await apiPost({action:'updBill',id:bill.id,row:billSaveRow(bill)});
       }
       const nOut=Math.max(0,totalDue-actual);
       const uc={...c,outstanding:nOut};
@@ -1328,7 +1337,7 @@ async function quickCustPay(bId,cId,due){
   try{
     await apiPost({action:'addCustomerPayment',row:payRow});DB.customerPayments.push(payRow);
     bill.amountPaid=(+bill.amountPaid||0)+actual;bill.paymentStatus=bill.amountPaid>=bill.payableAmount?'paid':'partial';
-    await apiPost({action:'updBill',id:bId,row:{...bill,items:JSON.stringify(Array.isArray(bill.items)?bill.items:[])}});
+    await apiPost({action:'updBill',id:bId,row:billSaveRow(bill)});
     const nOut=Math.max(0,(+c.outstanding||0)-actual);const uc={...c,outstanding:nOut};
     await apiPost({action:'updCustomer',id:cId,row:uc});c.outstanding=nOut;
     toast(`${fmt(actual)} collected`,'ok');g('pageArea').innerHTML=pgCustomers(cId);
@@ -1337,10 +1346,8 @@ async function quickCustPay(bId,cId,due){
 function custWA(custId){
   const c=DB.customers.find(x=>x.id===custId);if(!c)return;
   const pending=DB.bills.filter(b=>b.customerId===custId&&b.paymentStatus!=='paid');
-  const msg=`Dear ${c.name},\n\nThis is a reminder from ${SHOP_NAME}.\n\nYour outstanding balance: *₨${Math.round(+c.outstanding||0)}*\n\nPending bills:\n${pending.map(b=>{const due=b.payableAmount-(+b.amountPaid||0);return `- ${b.date}: ₨${Math.round(due)} due`;}).join('\n')||'None'}\n\nPlease visit us to settle your account.\n\nThank you for your business! 🙏`;
-  let num=(c.phone||'').replace(/[^0-9]/g,'');if(num.startsWith('0'))num='92'+num.slice(1);
-  if(num)window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');
-  else toast('No phone number saved for this customer','warn');
+  const msg=`Dear ${c.name},\n\nThis is a reminder from ${SHOP_NAME}.\n\nYour outstanding balance: *₨${Math.round(+c.outstanding||0)}*\n\nPending bills:\n${pending.map(b=>`- ${b.date}: ₨${Math.round(billDue(b))} due`).join('\n')||'None'}\n\nPlease visit us to settle your account.\n\nThank you for your business! 🙏`;
+  if(!openWhatsApp(c.phone,msg))toast('No phone number saved for this customer','warn');
 }
 
 /* ══════════════════════════════════════
@@ -1374,8 +1381,8 @@ function pgReturns(){
         <select class="f-ctrl" id="rBillSel">
           <option value="">— No bill link —</option>
           ${custBills.map(b=>{
-            const items=Array.isArray(b.items)?b.items:[];
-            const due=b.payableAmount-(+b.amountPaid||0);
+            const items=billItems(b);
+            const due=billDue(b);
             return `<option value="${b.id}">${b.date} — ${items.map(i=>i.name).join(', ')||'Bill'} — Due: ${fmt(due)} [${b.paymentStatus}]</option>`;
           }).join('')}
         </select>
@@ -1468,11 +1475,11 @@ async function applyReturnBillUpdate(){
   if(newStatus==='paid'){newPaid=bill.payableAmount;finalStatus='paid';}
   else if(newStatus==='partial'){const pa=parseFloat(g('rBillPaid')?g('rBillPaid').value:'0')||0;newPaid=Math.min(pa,bill.payableAmount);finalStatus=newPaid>=bill.payableAmount?'paid':'partial';}
   else if(newStatus==='unpaid'){newPaid=0;finalStatus='unpaid';}
-  const oldDue=bill.payableAmount-(+bill.amountPaid||0);
+  const oldDue=billDue(bill);
   const newDue=bill.payableAmount-newPaid;
   const dueDiff=oldDue-newDue;
   bill.amountPaid=newPaid;bill.paymentStatus=finalStatus;
-  await apiPost({action:'updBill',id:billId,row:{...bill,items:JSON.stringify(Array.isArray(bill.items)?bill.items:[])}});
+  await apiPost({action:'updBill',id:billId,row:billSaveRow(bill)});
   const newOut=Math.max(0,(+cust.outstanding||0)-dueDiff);
   const uc={...cust,outstanding:newOut};
   await apiPost({action:'updCustomer',id:custId,row:uc});cust.outstanding=newOut;
@@ -1520,7 +1527,7 @@ function pgVendors(){
   const vOrders=sv?DB.orders.filter(o=>o.vendorId===sv.id):[];
   const open=vOrders.filter(o=>o.status!=='paid');
   const hist=vOrders.filter(o=>o.status==='paid');
-  const low=DB.products.filter(p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert);
+  const low=lowStockProducts();
   const vPayHist=sv?DB.vendorPayments.filter(vp=>vp.vendorId===sv.id):[];
   return `
   <div class="${sv?'cols-2':''}">
@@ -1596,7 +1603,7 @@ function pgVendors(){
           <tbody>${[...vPayHist].reverse().map(vp=>`<tr>
             <td class="sm">${vp.date}</td>
             <td><input type="number" value="${+vp.amount||0}" style="width:100px;padding:4px 6px;border:1px solid var(--bd);border-radius:4px;font-size:12px" id="vpa_${vp.id}"/></td>
-            <td>${vp.paymentType==='advance'?'<span class="adv-badge">Advance</span>':'<span class="badge b-gray">Regular</span>'}</td>
+            <td>${payTypeBadge(vp)}</td>
             <td class="sm">${esc(vp.method||'—')}</td>
             <td><input type="text" value="${esc(vp.note||'')}" style="width:140px;padding:4px 6px;border:1px solid var(--bd);border-radius:4px;font-size:12px" id="vpn_${vp.id}" placeholder="Note…"/></td>
             <td><button class="btn btn-xs btn-primary" onclick="saveVendorPay('${vp.id}','${sv.id}')">Save</button></td>
@@ -1614,7 +1621,7 @@ function pgVendors(){
   </div>`;
 }
 function selV(id){CUR.selVendor=id;renderPage();}
-function openWA(phone){let c=phone.replace(/[^0-9]/g,'');if(c.startsWith('0'))c='92'+c.slice(1);window.open('https://wa.me/'+c,'_blank');}
+function openWA(phone){openWhatsApp(phone);}
 
 async function saveVendorPay(vpId,vId){
   const vp=DB.vendorPayments.find(x=>x.id===vpId);
@@ -1691,7 +1698,7 @@ async function deleteOrder(oId,vId){
 function showVendorWAModal(vId){
   const v=DB.vendors.find(x=>x.id===vId);if(!v)return;
   const openOrders=DB.orders.filter(o=>o.vendorId===vId&&o.status!=='paid');
-  const low=DB.products.filter(p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert);
+  const low=lowStockProducts();
   _waBill=`Assalamualaikum ${v.name},\n\nYour current outstanding balance with us: *₨${Math.round(+v.balance||0)}*\n\nOpen orders:\n${openOrders.map(o=>`- ${o.items}: Due ₨${Math.round(+o.due||0)}`).join('\n')||'None'}\n\nPlease arrange settlement at your earliest convenience.\n\nJazakAllah Khair 🙏`;
   const orderSugg=low.map(p=>`${p.name} — ${p.qty} remaining, need restock`).join('\n')||'Please let us know available items.';
   _waOrder=`Assalamualaikum ${v.name},\n\nWe would like to place the following order:\n\n${orderSugg}\n\nPlease confirm availability and pricing.\n\nThank you!`;
@@ -1718,9 +1725,7 @@ function showVendorWAModal(vId){
   setTimeout(()=>{const el=document.getElementById('waMsg');if(el)el.value=_waBill;},50);
 }
 function sendVendorWA(phone){
-  const msg=val('waMsg');let num=phone.replace(/[^0-9]/g,'');if(num.startsWith('0'))num='92'+num.slice(1);
-  if(num)window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');
-  else toast('No phone number for this vendor','warn');
+  if(!openWhatsApp(phone,val('waMsg')))toast('No phone number for this vendor','warn');
 }
 
 function showMakeVendorPayModal(vId,oId,suggestedAmt){
@@ -2031,7 +2036,7 @@ function pgPayments(){
           <td class="sm">${p.date}</td>
           <td><strong>${esc(p.vendorName)}</strong></td>
           <td style="font-weight:600;color:var(--err)">${fmt(+p.amount||0)}</td>
-          <td>${p.paymentType==='advance'?'<span class="adv-badge">Advance</span>':'<span class="badge b-gray">Regular</span>'}</td>
+          <td>${payTypeBadge(p)}</td>
           <td class="sm">${esc(p.method||'—')}</td>
           <td class="sm muted">${esc(p.note||'—')}</td>
         </tr>`).join('')}</tbody>
@@ -2045,7 +2050,7 @@ function pgPayments(){
           <td class="sm">${p.date}</td>
           <td><strong>${esc(p.customerName)}</strong></td>
           <td style="font-weight:600;color:var(--ok)">${fmt(+p.amount||0)}</td>
-          <td>${p.paymentType==='advance'?'<span class="adv-badge">Advance</span>':'<span class="badge b-gray">Regular</span>'}</td>
+          <td>${payTypeBadge(p)}</td>
           <td class="sm">${esc(p.method||'—')}</td>
           <td class="sm muted">${esc(p.note||'—')}</td>
         </tr>`).join('')}</tbody>
@@ -2205,7 +2210,7 @@ function rptSales(){
   <tbody>${bills.length?bills.map(b=>`<tr><td class="sm">${b.date}</td><td>${esc(b.customerName)}</td><td>${fmt(b.payableAmount)}</td><td>${fmt(+b.amountPaid||0)}</td><td>${sBadge(b.paymentStatus)}</td></tr>`).join(''):`<tr><td colspan="5">${emptyEl('📄','No bills','10px')}</td></tr>`}</tbody></table></div>`;
 }
 function rptStock(){
-  const low=DB.products.filter(p=>p.lowStockAlert>0&&p.qty<=p.lowStockAlert);
+  const low=lowStockProducts();
   const out=DB.products.filter(p=>p.qty===0);
   return `<div class="card-title">Stock Report</div>
   <div class="g2" style="margin-bottom:12px">
@@ -2281,7 +2286,7 @@ function rptCustomer(){
         <span>Advance: <strong style="color:var(--p)">${fmt(+c.advanceBalance||0)}</strong></span>
       </div>
       ${pending.length?`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th></tr></thead>
-      <tbody>${pending.map(b=>{const due=b.payableAmount-(+b.amountPaid||0);return`<tr><td class="sm">${b.date}</td><td>${fmt(b.payableAmount)}</td><td>${fmt(+b.amountPaid||0)}</td><td style="color:var(--err);font-weight:600">${fmt(due)}</td><td>${sBadge(b.paymentStatus)}</td></tr>`;}).join('')}</tbody></table></div>`:''}
+      <tbody>${pending.map(b=>{const due=billDue(b);return`<tr><td class="sm">${b.date}</td><td>${fmt(b.payableAmount)}</td><td>${fmt(+b.amountPaid||0)}</td><td style="color:var(--err);font-weight:600">${fmt(due)}</td><td>${sBadge(b.paymentStatus)}</td></tr>`;}).join('')}</tbody></table></div>`:''}
       <button class="btn btn-xs btn-danger" style="margin-top:8px" onclick="deleteCustomerRecord('${c.id}')">🗑 Delete All Records</button>
     </div>`;}).join('')}`;
 }
