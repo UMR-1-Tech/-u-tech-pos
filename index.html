@@ -378,6 +378,14 @@ alter table "vendorPayments" enable row level security;
 alter table "customerPayments" enable row level security;
 alter table expenses enable row level security;
 
+-- SECURITY WARNING: the "allow all" policies below grant full read/write
+-- access to anyone holding the public anon key (which ships in the browser).
+-- This exposes all business data. For production, replace these with policies
+-- scoped to authenticated users, e.g.:
+--   create policy "auth read" on products for select to authenticated using (true);
+--   create policy "auth write" on products for all   to authenticated using (true) with check (true);
+-- and enable Supabase Auth so the anon key alone cannot read/modify data.
+
 -- Allow all access with anon key
 create policy "allow all" on products for all using (true) with check (true);
 create policy "allow all" on customers for all using (true) with check (true);
@@ -404,7 +412,7 @@ create policy "allow all" on expenses for all using (true) with check (true);</t
     <div class="f-group"><label class="f-label">Password</label><input type="password" class="f-ctrl" id="liP" placeholder="Enter password"/></div>
     <div id="liErr" class="alert alert-err hidden">Invalid username or password.</div>
     <button class="btn btn-primary btn-block" style="padding:11px" onclick="doLogin()">Sign In</button>
-    <p class="sm muted" style="text-align:center;margin-top:10px">Default: <strong>admin</strong> / <strong>admin123</strong></p>
+    <p class="sm muted" style="text-align:center;margin-top:10px">Contact your administrator if you need access.</p>
   </div>
 </div>
 
@@ -455,7 +463,7 @@ create policy "allow all" on expenses for all using (true) with check (true);</t
 /* ── HELPERS (must be first — used in state init) ── */
 const g=id=>document.getElementById(id);
 const val=id=>(g(id)?.value||'').trim();
-const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/`/g,'&#96;');
 const fmt=n=>'₨ '+Math.round(+n||0).toLocaleString();
 const today=()=>new Date().toISOString().slice(0,10);
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -2476,6 +2484,8 @@ function loadZXing(){
     if(_zxingLoaded&&window.ZXing){resolve();return;}
     const s=document.createElement('script');
     s.src='https://cdn.jsdelivr.net/npm/@zxing/library@0.21.1/umd/index.min.js';
+    s.integrity='sha384-6QrQzbUxfS1KpH5vrFA1F2Wjb9sTF8GOkGFLkb6Z35KW9FGA0YD94ZvlqHyvxxrB';
+    s.crossOrigin='anonymous';
     s.onload=()=>{_zxingLoaded=true;resolve();};
     s.onerror=()=>reject(new Error('Failed to load scanner library'));
     document.head.appendChild(s);
